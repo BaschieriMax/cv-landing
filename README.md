@@ -68,3 +68,13 @@ src/
 - Colori e font: modifica le variabili in cima a `src/index.css`.
 - Campi del form: aggiungi o rimuovi voci nell'oggetto `EMPTY_FORM` e nel
   relativo blocco `<Field>` in `src/App.jsx`.
+
+## Cosa fare ogni volta che si cambia qualcosa
+
+- Ogni volta che modifichi qualcosa in VS Code:
+
+1. git add .
+2. git commit -m "descrizione modifica"
+3. git push
+
+- Netlify rileva il push, fa la build automaticamente e pubblica in 1-2 minuti, senza bisogno di npm run build manuale né di trascinare cartelle.

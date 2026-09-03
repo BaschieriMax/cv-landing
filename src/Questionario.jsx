@@ -126,15 +126,13 @@ function validateStep(step, data) {
     if (!c.tecniche.trim()) e.tecniche = "Descrivi le tue competenze tecniche";
     if (!c.lingue.trim()) e.lingue = "Indica le lingue parlate e il livello";
     if (!c.software.trim()) e.software = "Indica gli strumenti che usi";
-    if (!c.certificazioni.trim())
-      e.certificazioni = "Scrivi \"Nessuna\" se non ne hai";
-    if (!c.softSkills.trim()) e.softSkills = "Indica le tue soft skills";
     return { competenze: e };
   }
 
   const x = data.extra;
   const e = {};
-  if (!x.disponibilitaTrasferte) e.disponibilitaTrasferte = "Seleziona un'opzione";
+  if (!x.disponibilitaTrasferte)
+    e.disponibilitaTrasferte = "Seleziona un'opzione";
   return { extra: e };
 }
 
@@ -142,12 +140,13 @@ function hasErrors(errors) {
   return Object.values(errors).some((section) =>
     Array.isArray(section)
       ? section.some((item) => Object.keys(item).length > 0)
-      : Object.keys(section).length > 0
+      : Object.keys(section).length > 0,
   );
 }
 
 function riga(etichetta, valore, fallback = "—") {
-  const testo = valore && String(valore).trim() ? String(valore).trim() : fallback;
+  const testo =
+    valore && String(valore).trim() ? String(valore).trim() : fallback;
   return `${etichetta}: ${testo}`;
 }
 
@@ -177,9 +176,12 @@ function buildMessage(data) {
     })
     .join("\n\n");
 
-  const haUniversita = [f.universita, f.corsoLaurea, f.annoLaurea, f.votoLaurea].some(
-    (v) => v.trim()
-  );
+  const haUniversita = [
+    f.universita,
+    f.corsoLaurea,
+    f.annoLaurea,
+    f.votoLaurea,
+  ].some((v) => v.trim());
 
   const blocoUniversita = haUniversita
     ? [
@@ -318,10 +320,16 @@ function StepObiettivo({ data, errors, onChange }) {
         <textarea
           id="aziendeTarget"
           value={o.aziendeTarget}
-          onChange={(ev) => onChange("obiettivo", "aziendeTarget", ev.target.value)}
+          onChange={(ev) =>
+            onChange("obiettivo", "aziendeTarget", ev.target.value)
+          }
         />
       </div>
-      <Field id="contratto" label="Tipo di contratto desiderato" error={e.contratto}>
+      <Field
+        id="contratto"
+        label="Tipo di contratto desiderato"
+        error={e.contratto}
+      >
         <select
           id="contratto"
           value={o.contratto}
@@ -339,7 +347,9 @@ function StepObiettivo({ data, errors, onChange }) {
         <select
           id="smartWorking"
           value={o.smartWorking}
-          onChange={(ev) => onChange("obiettivo", "smartWorking", ev.target.value)}
+          onChange={(ev) =>
+            onChange("obiettivo", "smartWorking", ev.target.value)
+          }
         >
           <option value="">Seleziona un'opzione</option>
           {SMART_WORKING_OPTIONS.map((opt) => (
@@ -357,7 +367,9 @@ function StepObiettivo({ data, errors, onChange }) {
         <select
           id="trasferimento"
           value={o.trasferimento}
-          onChange={(ev) => onChange("obiettivo", "trasferimento", ev.target.value)}
+          onChange={(ev) =>
+            onChange("obiettivo", "trasferimento", ev.target.value)
+          }
         >
           <option value="">Seleziona un'opzione</option>
           {TRASFERIMENTO_OPTIONS.map((opt) => (
@@ -368,13 +380,17 @@ function StepObiettivo({ data, errors, onChange }) {
         </select>
       </Field>
       <div className="q-field">
-        <label htmlFor="rangeSalariale">Range salariale atteso (facoltativo)</label>
+        <label htmlFor="rangeSalariale">
+          Range salariale atteso (facoltativo)
+        </label>
         <input
           id="rangeSalariale"
           type="text"
           placeholder="Es. 28.000-32.000 € lordi/anno"
           value={o.rangeSalariale}
-          onChange={(ev) => onChange("obiettivo", "rangeSalariale", ev.target.value)}
+          onChange={(ev) =>
+            onChange("obiettivo", "rangeSalariale", ev.target.value)
+          }
         />
       </div>
     </div>
@@ -530,7 +546,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="scuolaSuperiore"
           type="text"
           value={f.scuolaSuperiore}
-          onChange={(ev) => onChange("formazione", "scuolaSuperiore", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "scuolaSuperiore", ev.target.value)
+          }
         />
       </Field>
       <div className="q-field">
@@ -539,7 +557,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="indirizzo"
           type="text"
           value={f.indirizzo}
-          onChange={(ev) => onChange("formazione", "indirizzo", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "indirizzo", ev.target.value)
+          }
         />
       </div>
       <div className="q-field">
@@ -548,7 +568,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="annoDiploma"
           type="text"
           value={f.annoDiploma}
-          onChange={(ev) => onChange("formazione", "annoDiploma", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "annoDiploma", ev.target.value)
+          }
         />
       </div>
       <div className="q-field">
@@ -557,7 +579,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="votoDiploma"
           type="text"
           value={f.votoDiploma}
-          onChange={(ev) => onChange("formazione", "votoDiploma", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "votoDiploma", ev.target.value)
+          }
         />
       </div>
 
@@ -571,7 +595,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="universita"
           type="text"
           value={f.universita}
-          onChange={(ev) => onChange("formazione", "universita", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "universita", ev.target.value)
+          }
         />
       </div>
       <div className="q-field">
@@ -580,7 +606,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="corsoLaurea"
           type="text"
           value={f.corsoLaurea}
-          onChange={(ev) => onChange("formazione", "corsoLaurea", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "corsoLaurea", ev.target.value)
+          }
         />
       </div>
       <div className="q-field">
@@ -589,7 +617,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="annoLaurea"
           type="text"
           value={f.annoLaurea}
-          onChange={(ev) => onChange("formazione", "annoLaurea", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "annoLaurea", ev.target.value)
+          }
         />
       </div>
       <div className="q-field">
@@ -598,7 +628,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="votoLaurea"
           type="text"
           value={f.votoLaurea}
-          onChange={(ev) => onChange("formazione", "votoLaurea", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "votoLaurea", ev.target.value)
+          }
         />
       </div>
       <div className="q-field full">
@@ -607,7 +639,9 @@ function StepFormazione({ data, errors, onChange }) {
           id="titoloTesi"
           type="text"
           value={f.titoloTesi}
-          onChange={(ev) => onChange("formazione", "titoloTesi", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "titoloTesi", ev.target.value)
+          }
         />
       </div>
       <div className="q-field full">
@@ -617,7 +651,9 @@ function StepFormazione({ data, errors, onChange }) {
         <textarea
           id="masterCorsi"
           value={f.masterCorsi}
-          onChange={(ev) => onChange("formazione", "masterCorsi", ev.target.value)}
+          onChange={(ev) =>
+            onChange("formazione", "masterCorsi", ev.target.value)
+          }
         />
       </div>
     </div>
@@ -661,23 +697,27 @@ function StepCompetenze({ data, errors, onChange }) {
       </div>
       <div className="q-field full">
         <label htmlFor="certificazioni">
-          Certificazioni ottenute, con ente e anno
+          Certificazioni ottenute, con ente e anno (facoltativo)
         </label>
         <textarea
           id="certificazioni"
           value={c.certificazioni}
-          onChange={(ev) => onChange("competenze", "certificazioni", ev.target.value)}
+          onChange={(ev) =>
+            onChange("competenze", "certificazioni", ev.target.value)
+          }
         />
         {e.certificazioni && (
           <span className="q-error-text">{e.certificazioni}</span>
         )}
       </div>
       <div className="q-field full">
-        <label htmlFor="softSkills">Soft skills percepite</label>
+        <label htmlFor="softSkills">Soft skills percepite (facoltativo)</label>
         <textarea
           id="softSkills"
           value={c.softSkills}
-          onChange={(ev) => onChange("competenze", "softSkills", ev.target.value)}
+          onChange={(ev) =>
+            onChange("competenze", "softSkills", ev.target.value)
+          }
         />
         {e.softSkills && <span className="q-error-text">{e.softSkills}</span>}
       </div>
@@ -717,7 +757,9 @@ function StepExtra({ data, errors, onChange }) {
         <select
           id="disponibilitaTrasferte"
           value={x.disponibilitaTrasferte}
-          onChange={(ev) => onChange("extra", "disponibilitaTrasferte", ev.target.value)}
+          onChange={(ev) =>
+            onChange("extra", "disponibilitaTrasferte", ev.target.value)
+          }
         >
           <option value="">Seleziona un'opzione</option>
           {TRASFERTE_OPTIONS.map((opt) => (
@@ -760,7 +802,9 @@ function StepExtra({ data, errors, onChange }) {
         <textarea
           id="annuncioLavoro"
           value={x.annuncioLavoro}
-          onChange={(ev) => onChange("extra", "annuncioLavoro", ev.target.value)}
+          onChange={(ev) =>
+            onChange("extra", "annuncioLavoro", ev.target.value)
+          }
         />
       </div>
       <div className="q-field full">
@@ -770,7 +814,9 @@ function StepExtra({ data, errors, onChange }) {
         <textarea
           id="periodiInattivita"
           value={x.periodiInattivita}
-          onChange={(ev) => onChange("extra", "periodiInattivita", ev.target.value)}
+          onChange={(ev) =>
+            onChange("extra", "periodiInattivita", ev.target.value)
+          }
         />
         <span className="q-hint">
           Serve solo per costruire una narrazione coerente nel CV, non verrà
@@ -784,7 +830,9 @@ function StepExtra({ data, errors, onChange }) {
         <textarea
           id="cosaNonInserire"
           value={x.cosaNonInserire}
-          onChange={(ev) => onChange("extra", "cosaNonInserire", ev.target.value)}
+          onChange={(ev) =>
+            onChange("extra", "cosaNonInserire", ev.target.value)
+          }
         />
       </div>
     </div>
@@ -819,7 +867,11 @@ export default function Questionario() {
       return { ...d, esperienze: list };
     });
     setErrors((err) => {
-      if (!err.esperienze || !err.esperienze[index] || !err.esperienze[index][field])
+      if (
+        !err.esperienze ||
+        !err.esperienze[index] ||
+        !err.esperienze[index][field]
+      )
         return err;
       const list = [...err.esperienze];
       const next = { ...list[index] };
@@ -830,7 +882,10 @@ export default function Questionario() {
   }
 
   function addEsperienza() {
-    setData((d) => ({ ...d, esperienze: [...d.esperienze, emptyEsperienza()] }));
+    setData((d) => ({
+      ...d,
+      esperienze: [...d.esperienze, emptyEsperienza()],
+    }));
   }
 
   function removeEsperienza(index) {
@@ -840,14 +895,17 @@ export default function Questionario() {
     }));
     setErrors((err) => {
       if (!err.esperienze) return err;
-      return { ...err, esperienze: err.esperienze.filter((_, i) => i !== index) };
+      return {
+        ...err,
+        esperienze: err.esperienze.filter((_, i) => i !== index),
+      };
     });
   }
 
   async function submitQuestionario() {
     if (!accessKey || accessKey === "inserisci_qui_la_tua_access_key") {
       setSubmitError(
-        "Access key Web3Forms mancante: configurala nel file .env (vedi README)."
+        "Access key Web3Forms mancante: configurala nel file .env (vedi README).",
       );
       return;
     }
@@ -858,7 +916,10 @@ export default function Questionario() {
     try {
       const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({
           access_key: accessKey,
           subject: `Questionario CV — ${data.personali.nome}`,
@@ -874,7 +935,7 @@ export default function Questionario() {
         setSubmitted(true);
       } else {
         setSubmitError(
-          "Qualcosa non ha funzionato. Riprova o scrivimi direttamente via email."
+          "Qualcosa non ha funzionato. Riprova o scrivimi direttamente via email.",
         );
       }
     } catch {
@@ -911,9 +972,13 @@ export default function Questionario() {
   function renderStep() {
     switch (step) {
       case 0:
-        return <StepPersonali data={data} errors={errors} onChange={onChange} />;
+        return (
+          <StepPersonali data={data} errors={errors} onChange={onChange} />
+        );
       case 1:
-        return <StepObiettivo data={data} errors={errors} onChange={onChange} />;
+        return (
+          <StepObiettivo data={data} errors={errors} onChange={onChange} />
+        );
       case 2:
         return (
           <StepEsperienze
@@ -925,9 +990,13 @@ export default function Questionario() {
           />
         );
       case 3:
-        return <StepFormazione data={data} errors={errors} onChange={onChange} />;
+        return (
+          <StepFormazione data={data} errors={errors} onChange={onChange} />
+        );
       case 4:
-        return <StepCompetenze data={data} errors={errors} onChange={onChange} />;
+        return (
+          <StepCompetenze data={data} errors={errors} onChange={onChange} />
+        );
       default:
         return <StepExtra data={data} errors={errors} onChange={onChange} />;
     }
@@ -938,17 +1007,33 @@ export default function Questionario() {
       <header className="q-header">
         <div className="wrap q-header-inner">
           <div className="brand-name">Massimo Baschieri</div>
-          <div className="brand-tag">Questionario per l'avvio della lavorazione del CV</div>
+          <div className="brand-tag">
+            Questionario per l'avvio della lavorazione del CV
+          </div>
         </div>
       </header>
 
       <div className="wrap q-body">
         {submitted ? (
           <div className="q-confirmation">
+            <div className="q-confirmation-icon" aria-hidden="true">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
             <h1>Questionario ricevuto</h1>
             <p>
-              Ho tutte le informazioni per iniziare. Ti aggiorno appena la
-              prima bozza del tuo CV è pronta.
+              Ho tutte le informazioni per iniziare. Ti aggiorno appena la prima
+              bozza del tuo CV è pronta.
             </p>
           </div>
         ) : (
@@ -972,7 +1057,11 @@ export default function Questionario() {
 
               <div className="q-nav">
                 {step > 0 && (
-                  <button type="button" className="q-btn-secondary" onClick={goBack}>
+                  <button
+                    type="button"
+                    className="q-btn-secondary"
+                    onClick={goBack}
+                  >
                     Indietro
                   </button>
                 )}

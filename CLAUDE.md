@@ -27,16 +27,35 @@ Sito live: https://cvbaschieridev.netlify.app/
 ```
 index.html          meta tag, SEO, Open Graph, favicon
 src/
-  App.jsx            unico componente: hero, pacchetti, form di contatto
-  App.css            tutti gli stili del sito
-  index.css          reset globale e variabili di colore/font
-  main.jsx           entry point React, non richiede modifiche di solito
+  App.jsx            landing page "/": hero, pacchetti, form di contatto
+  App.css            stili della landing page
+  Questionario.jsx   wizard multi-step "/questionario" (raccolta dati cliente)
+  Questionario.css   stili del wizard, riusa le variabili di src/index.css
+  index.css          reset globale e variabili di colore/font (condiviso)
+  main.jsx           entry point React + routing (react-router-dom)
 public/
   favicon.ico, favicon-32.png, apple-touch-icon.png    icone del sito
   og-image.png        immagine di anteprima per condivisioni social
 .env                 contiene VITE_WEB3FORMS_ACCESS_KEY (mai committato)
 .env.example         modello per .env
 ```
+
+## Route "/questionario"
+
+Wizard a 6 step per raccogliere i dati del cliente dopo il primo contatto
+(Dati personali, Obiettivo professionale, Esperienze lavorative —
+ripetibili con "Aggiungi un'altra esperienza", Formazione, Competenze,
+Extra e conferma finale). Invia via Web3Forms come il form della landing,
+con un testo email strutturato per sezioni (funzione `buildMessage` in
+`Questionario.jsx`). Usa react-router-dom (`BrowserRouter`) per la
+navigazione tra "/" e "/questionario", introdotto insieme a questa
+route — se aggiungi altre route in futuro, passa da lì.
+
+In "Competenze" solo "Competenze tecniche", "Lingue parlate" e
+"Software/strumenti" sono obbligatori; "Certificazioni" e "Soft skills"
+sono facoltativi. Sotto i 760px il tag `<form>` ha un padding aggiuntivo
+di 40px per evitare che i campi risultino attaccati ai bordi del
+dispositivo (vedi media query in fondo a `Questionario.css`).
 
 ## Variabili d'ambiente
 
@@ -95,7 +114,9 @@ non un template SaaS con card arrotondate ovunque.
 
 1. Metodo di pagamento da integrare o almeno menzionare nel sito
    (bonifico, PayPal, link Stripe)
-2. Questionario esteso di raccolta dati clienti (gestito fuori dal sito,
-   probabilmente Google Form/Typeform collegato dopo il primo contatto)
+2. ~~Questionario esteso di raccolta dati clienti~~ — fatto: implementato
+   come pagina nativa del sito su "/questionario" (non più
+   Google Form/Typeform esterno come originariamente previsto), testato
+   end-to-end incluso invio email reale.
 3. Possibile pagina o sezione dedicata al pacchetto Career Boost con più
    dettaglio, se le richieste aumentano

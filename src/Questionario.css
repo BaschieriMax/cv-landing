@@ -245,7 +245,4 @@ form > .q-btn-secondary {
   .q-step-grid {
     grid-template-columns: 1fr;
   }
-  form {
-    padding: 40px;
-  }
 }

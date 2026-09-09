@@ -1239,7 +1239,7 @@ export default function Questionario() {
     <div className="questionario-page">
       <header className="q-header">
         <div className="wrap brand">
-          <div>
+          <div className="q-header-text">
             <div className="brand-name">Benvenuto {user?.name}</div>
             <div className="brand-tag">
               ora puoi compilare il questionario per l'avvio della lavorazione
@@ -1248,11 +1248,14 @@ export default function Questionario() {
           </div>
           <Button
             variant="secondary"
+            className="q-header-logout"
             onClick={handleLogout}
             icon={<LogOut size={16} />}
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Uscita in corso..." : "Esci"}
+            <span className="q-header-logout-text">
+              {mutation.isPending ? "Uscita in corso..." : "Esci"}
+            </span>
           </Button>
         </div>
       </header>

@@ -4,7 +4,7 @@ import "../Questionario.css";
 import { useAuthStore } from "../store/auth";
 import Button from "../components/Button";
 import { useMutation } from "@tanstack/react-query";
-import { LogOut, PlusIcon } from "lucide-react";
+import { LoaderCircle, LogOut, PlusIcon } from "lucide-react";
 
 const STEP_TITLES = [
   "Dati personali",
@@ -1250,7 +1250,13 @@ export default function Questionario() {
             variant="secondary"
             className="q-header-logout"
             onClick={handleLogout}
-            icon={<LogOut size={16} />}
+            icon={
+              mutation.isPending ? (
+                <LoaderCircle size={16} className="spin" />
+              ) : (
+                <LogOut size={16} />
+              )
+            }
             disabled={mutation.isPending}
           >
             <span className="q-header-logout-text">

@@ -257,14 +257,14 @@ form > .q-btn-secondary {
     grid-template-columns: 1fr;
   }
 
-  .brand-name {
+  .q-header .brand-name {
     font-size: 17px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .brand-tag {
+  .q-header .brand-tag {
     display: none;
   }
 

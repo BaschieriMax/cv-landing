@@ -1,0 +1,45 @@
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.auth-form-title {
+  font-size: 22px;
+  text-align: center;
+}
+
+.auth-form-message {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.auth-form-message-error {
+  color: var(--danger);
+}
+
+.auth-form-message-info {
+  color: #3b6d11;
+}
+
+.auth-form-toggle {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.auth-form-toggle:hover {
+  color: var(--ink);
+}

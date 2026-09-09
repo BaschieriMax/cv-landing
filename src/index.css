@@ -1,0 +1,31 @@
+:root {
+  --ink: #1e2a38;
+  --ink-soft: #3e4a58;
+  --paper: #efede5;
+  --paper-raised: #f8f7f2;
+  --gold: #a6772f;
+  --gold-deep: #7a5620;
+  --line: rgba(30, 42, 56, 0.14);
+  --line-strong: rgba(30, 42, 56, 0.28);
+  --danger: #9a3324;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Source Serif 4', serif;
+  font-weight: 500;
+  margin: 0;
+}

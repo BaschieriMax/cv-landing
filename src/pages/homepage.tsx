@@ -1,7 +1,14 @@
 import { useState } from "react";
-import "./App.css";
+import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
+import "../App.css";
+import Button from "../components/Button";
 
-const PACCHETTI = [
+interface PacchettoOption {
+  value: string;
+  label: string;
+}
+
+const PACCHETTI: PacchettoOption[] = [
   { value: "", label: "Non sono ancora sicuro/a" },
   { value: "Base", label: "Base" },
   { value: "Professional", label: "Professional" },
@@ -9,7 +16,16 @@ const PACCHETTI = [
   { value: "Career Boost", label: "Career Boost" },
 ];
 
-const EMPTY_FORM = {
+interface ContactFormData {
+  nome: string;
+  email: string;
+  telefono: string;
+  ruolo: string;
+  pacchetto: string;
+  messaggio: string;
+}
+
+const EMPTY_FORM: ContactFormData = {
   nome: "",
   email: "",
   telefono: "",
@@ -18,8 +34,10 @@ const EMPTY_FORM = {
   messaggio: "",
 };
 
-function validate(form) {
-  const errors = {};
+type ContactFormErrors = Partial<Record<keyof ContactFormData, string>>;
+
+function validate(form: ContactFormData): ContactFormErrors {
+  const errors: ContactFormErrors = {};
 
   if (!form.nome.trim()) errors.nome = "Inserisci nome e cognome";
 
@@ -38,7 +56,27 @@ function validate(form) {
   return errors;
 }
 
-function Field({ id, label, error, children }) {
+type StatusType = "" | "ok" | "err";
+
+interface StatusState {
+  type: StatusType;
+  message: string;
+}
+
+const EMPTY_STATUS: StatusState = { type: "", message: "" };
+
+interface Web3FormsResponse {
+  success: boolean;
+}
+
+interface FieldProps {
+  id: string;
+  label: string;
+  error?: string;
+  children: ReactNode;
+}
+
+function Field({ id, label, error, children }: FieldProps) {
   return (
     <div className={`field${error ? " invalid" : ""}`}>
       <label htmlFor={id}>{label}</label>
@@ -48,26 +86,30 @@ function Field({ id, label, error, children }) {
   );
 }
 
-export default function App() {
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState({ type: "", message: "" });
+export default function Homepage() {
+  const [form, setForm] = useState<ContactFormData>(EMPTY_FORM);
+  const [errors, setErrors] = useState<ContactFormErrors>({});
+  const [status, setStatus] = useState<StatusState>(EMPTY_STATUS);
   const [submitting, setSubmitting] = useState(false);
 
-  const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+  const accessKey: string | undefined = import.meta.env
+    .VITE_WEB3FORMS_ACCESS_KEY;
 
-  function handleChange(e) {
-    const { name, value } = e.target;
+  function handleChange(
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) {
+    const { value } = e.target;
+    const name = e.target.name as keyof ContactFormData;
 
     setForm((f) => ({ ...f, [name]: value }));
 
     if (errors[name]) setErrors((err) => ({ ...err, [name]: undefined }));
   }
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    setStatus({ type: "", message: "" });
+    setStatus(EMPTY_STATUS);
 
     const validationErrors = validate(form);
 
@@ -91,7 +133,7 @@ export default function App() {
 
     setSubmitting(true);
 
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.currentTarget);
 
     formData.append("access_key", accessKey);
 
@@ -101,7 +143,7 @@ export default function App() {
         body: formData,
       });
 
-      const result = await res.json();
+      const result = (await res.json()) as Web3FormsResponse;
 
       if (result.success) {
         setStatus({
@@ -304,9 +346,9 @@ export default function App() {
             </div>
 
             <div className="submit-row">
-              <button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={submitting}>
                 {submitting ? "Invio in corso..." : "Invia richiesta"}
-              </button>
+              </Button>
               {status.message && (
                 <span className={`status-msg ${status.type}`}>
                   {status.message}

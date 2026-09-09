@@ -1,0 +1,91 @@
+.fz-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+.fz-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fz-label {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.fz-form input,
+.fz-form select,
+.fz-form textarea {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 15px;
+  padding: 11px 12px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  color: var(--ink);
+  width: 100%;
+}
+
+.fz-form input:focus,
+.fz-form select:focus,
+.fz-form textarea:focus {
+  outline: none;
+  border-color: var(--gold-deep);
+}
+
+.fz-form input[aria-invalid="true"],
+.fz-form select[aria-invalid="true"],
+.fz-form textarea[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.fz-password-wrap {
+  position: relative;
+  display: flex;
+}
+
+.fz-password-wrap input {
+  padding-right: 42px;
+}
+
+.fz-password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.fz-password-toggle:hover {
+  color: var(--ink);
+}
+
+.fz-option-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fz-option {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 14px;
+}
+
+.fz-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}

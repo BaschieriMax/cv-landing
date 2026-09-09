@@ -199,7 +199,7 @@ button {
   border-radius: 2px;
   cursor: pointer;
 }
-button:hover {
+button:hover:not(:disabled) {
   background: var(--ink-soft);
 }
 button:disabled {
@@ -248,4 +248,11 @@ footer {
   form {
     grid-template-columns: 1fr;
   }
+}
+
+.with-suspense {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

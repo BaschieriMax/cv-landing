@@ -7,17 +7,23 @@
   margin: 0 auto;
   padding: 0 28px;
 }
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .q-header {
   padding: 28px 0;
   border-bottom: 1px solid var(--line);
 }
-.q-header-inner .brand-name {
+
+.brand-name {
   font-family: "Source Serif 4", serif;
   font-size: 20px;
   font-weight: 600;
 }
-.q-header-inner .brand-tag {
+.brand-tag {
   font-size: 13px;
   color: var(--ink-soft);
 }
@@ -163,7 +169,7 @@ textarea {
   cursor: pointer;
   padding: 0;
 }
-.q-link-btn:hover {
+.q-link-btn:hover:not(:disabled) {
   text-decoration: underline;
 }
 
@@ -185,7 +191,7 @@ button {
   border-radius: 2px;
   cursor: pointer;
 }
-button:hover {
+button:hover:not(:disabled) {
   background: var(--ink-soft);
 }
 button:disabled {
@@ -197,7 +203,7 @@ button:disabled {
   color: var(--ink);
   border: 1px solid var(--line-strong);
 }
-.q-btn-secondary:hover {
+.q-btn-secondary:hover:not(:disabled) {
   background: var(--paper-raised);
 }
 .q-step-grid + .q-btn-secondary,

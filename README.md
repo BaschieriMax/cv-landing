@@ -1,80 +1,32 @@
-# Landing page — CV writing e career coaching
+# React + TypeScript + Vite
 
-Progetto React + Vite con la landing page e il form di raccolta contatti,
-collegato a [Web3Forms](https://web3forms.com) per ricevere le richieste
-via email senza bisogno di un backend.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## Come avviarlo
+Currently, two official plugins are available:
 
-1. Apri la cartella in VS Code.
-2. Installa le dipendenze:
-   ```
-   npm install
-   ```
-3. Copia il file di esempio delle variabili d'ambiente:
-   ```
-   cp .env.example .env
-   ```
-4. Vai su [web3forms.com](https://web3forms.com), inserisci la tua email
-   e copia la access key che ricevi.
-5. Apri `.env` e sostituisci il valore di `VITE_WEB3FORMS_ACCESS_KEY` con
-   la tua chiave.
-6. Avvia il progetto in locale:
-   ```
-   npm run dev
-   ```
-   Si apre su `http://localhost:5173`.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## L'URL da inserire su Web3Forms
+## React Compiler
 
-Web3Forms non richiede un URL da registrare in anticipo: la access key
-funziona da qualunque dominio da cui parte la richiesta. Quando pubblichi
-il sito (vedi sotto), le email arriveranno comunque alla stessa casella,
-indipendentemente dall'URL del sito.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-Se in futuro vuoi limitare da quali domini può arrivare il form (opzione
-disponibile nella dashboard di Web3Forms, sezione "Allowed domains"),
-inserisci lì l'URL definitivo del sito una volta pubblicato.
+## Expanding the Oxlint configuration
 
-## Come pubblicarlo online (gratis)
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
 
-1. Crea la build di produzione:
-   ```
-   npm run build
-   ```
-   Viene generata la cartella `dist/`.
-2. Vai su [app.netlify.com/drop](https://app.netlify.com/drop) e trascina
-   la cartella `dist/`: in pochi secondi ottieni un URL pubblico
-   (es. `nomecasuale.netlify.app`).
-3. In alternativa, pubblica l'intero progetto su GitHub e collega il
-   repository a Netlify o Vercel per il deploy automatico a ogni modifica.
-4. Se acquisti un dominio personalizzato (es. `tuonome.it`), puoi collegarlo
-   in pochi minuti dalle impostazioni di Netlify/Vercel.
-
-## Struttura del progetto
-
-```
-src/
-  App.jsx       componente principale (hero, pacchetti, form)
-  App.css       stili della pagina
-  index.css     reset e variabili globali
-  main.jsx      entry point React
-.env.example    modello per la access key Web3Forms (copialo in .env)
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
 ```
 
-## Personalizzazione rapida
-
-- Testi di hero, pacchetti e form: modifica direttamente `src/App.jsx`.
-- Colori e font: modifica le variabili in cima a `src/index.css`.
-- Campi del form: aggiungi o rimuovi voci nell'oggetto `EMPTY_FORM` e nel
-  relativo blocco `<Field>` in `src/App.jsx`.
-
-## Cosa fare ogni volta che si cambia qualcosa
-
-- Ogni volta che modifichi qualcosa in VS Code:
-
-1. git add .
-2. git commit -m "descrizione modifica"
-3. git push
-
-- Netlify rileva il push, fa la build automaticamente e pubblica in 1-2 minuti, senza bisogno di npm run build manuale né di trascinare cartelle.
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.

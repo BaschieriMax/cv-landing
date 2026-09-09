@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /questionario
+
+Sitemap: https://cvbaschieridev.netlify.app/sitemap.xml

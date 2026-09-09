@@ -1,5 +1,10 @@
 import { useState } from "react";
-import "./Questionario.css";
+import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
+import "../Questionario.css";
+import { useAuthStore } from "../store/auth";
+import Button from "../components/Button";
+import { useMutation } from "@tanstack/react-query";
+import { LogOut, PlusIcon } from "lucide-react";
 
 const STEP_TITLES = [
   "Dati personali",
@@ -8,22 +13,133 @@ const STEP_TITLES = [
   "Formazione",
   "Competenze",
   "Extra e conferma finale",
-];
+] as const;
 
 const CONTRATTO_OPTIONS = [
   "Tempo indeterminato",
   "Tempo determinato",
   "Stage",
   "Freelance",
-];
+] as const;
 
-const SMART_WORKING_OPTIONS = ["Sì", "No", "Ibrido", "Indifferente"];
+const SMART_WORKING_OPTIONS = ["Sì", "No", "Ibrido", "Indifferente"] as const;
 
-const TRASFERIMENTO_OPTIONS = ["Sì", "No", "Solo alcune città"];
+const TRASFERIMENTO_OPTIONS = ["Sì", "No", "Solo alcune città"] as const;
 
-const TRASFERTE_OPTIONS = ["Sì", "No"];
+const TRASFERTE_OPTIONS = ["Sì", "No"] as const;
 
-function emptyEsperienza() {
+interface PersonaliData {
+  nome: string;
+  email: string;
+  telefono: string;
+  citta: string;
+}
+
+interface ObiettivoData {
+  ruolo: string;
+  settore: string;
+  aziendeTarget: string;
+  contratto: string;
+  smartWorking: string;
+  trasferimento: string;
+  rangeSalariale: string;
+}
+
+interface EsperienzaData {
+  azienda: string;
+  ruolo: string;
+  periodoInizio: string;
+  periodoFine: string;
+  inCorso: boolean;
+  settore: string;
+  mansioni: string;
+  risultati: string;
+  tecnologie: string;
+  responsabilita: string;
+}
+
+interface FormazioneData {
+  scuolaSuperiore: string;
+  indirizzo: string;
+  annoDiploma: string;
+  votoDiploma: string;
+  universita: string;
+  corsoLaurea: string;
+  annoLaurea: string;
+  votoLaurea: string;
+  titoloTesi: string;
+  masterCorsi: string;
+}
+
+interface CompetenzeData {
+  tecniche: string;
+  lingue: string;
+  software: string;
+  certificazioni: string;
+  softSkills: string;
+}
+
+interface ExtraData {
+  hobby: string;
+  patente: string;
+  disponibilitaTrasferte: string;
+  portfolio: string;
+  linkedin: string;
+  annuncioLavoro: string;
+  periodiInattivita: string;
+  cosaNonInserire: string;
+}
+
+interface QuestionarioData {
+  personali: PersonaliData;
+  obiettivo: ObiettivoData;
+  esperienze: EsperienzaData[];
+  formazione: FormazioneData;
+  competenze: CompetenzeData;
+  extra: ExtraData;
+}
+
+type PersonaliErrors = Partial<Record<keyof PersonaliData, string>>;
+type ObiettivoErrors = Partial<Record<keyof ObiettivoData, string>>;
+type EsperienzaErrors = Partial<Record<keyof EsperienzaData, string>>;
+type FormazioneErrors = Partial<Record<keyof FormazioneData, string>>;
+type CompetenzeErrors = Partial<Record<keyof CompetenzeData, string>>;
+type ExtraErrors = Partial<Record<keyof ExtraData, string>>;
+
+interface QuestionarioErrors {
+  personali?: PersonaliErrors;
+  obiettivo?: ObiettivoErrors;
+  esperienze?: EsperienzaErrors[];
+  formazione?: FormazioneErrors;
+  competenze?: CompetenzeErrors;
+  extra?: ExtraErrors;
+}
+
+interface SectionDataMap {
+  personali: PersonaliData;
+  obiettivo: ObiettivoData;
+  formazione: FormazioneData;
+  competenze: CompetenzeData;
+  extra: ExtraData;
+}
+
+type SectionKey = keyof SectionDataMap;
+
+type OnSectionChange = <K extends SectionKey>(
+  section: K,
+  field: keyof SectionDataMap[K],
+  value: string,
+) => void;
+
+type EsperienzaFieldValue = string | boolean;
+
+type OnExperienceField = (
+  index: number,
+  field: keyof EsperienzaData,
+  value: EsperienzaFieldValue,
+) => void;
+
+function emptyEsperienza(): EsperienzaData {
   return {
     azienda: "",
     ruolo: "",
@@ -38,53 +154,13 @@ function emptyEsperienza() {
   };
 }
 
-const EMPTY_QUESTIONARIO = {
-  personali: { nome: "", email: "", telefono: "", citta: "" },
-  obiettivo: {
-    ruolo: "",
-    settore: "",
-    aziendeTarget: "",
-    contratto: "",
-    smartWorking: "",
-    trasferimento: "",
-    rangeSalariale: "",
-  },
-  esperienze: [emptyEsperienza()],
-  formazione: {
-    scuolaSuperiore: "",
-    indirizzo: "",
-    annoDiploma: "",
-    votoDiploma: "",
-    universita: "",
-    corsoLaurea: "",
-    annoLaurea: "",
-    votoLaurea: "",
-    titoloTesi: "",
-    masterCorsi: "",
-  },
-  competenze: {
-    tecniche: "",
-    lingue: "",
-    software: "",
-    certificazioni: "",
-    softSkills: "",
-  },
-  extra: {
-    hobby: "",
-    patente: "",
-    disponibilitaTrasferte: "",
-    portfolio: "",
-    linkedin: "",
-    annuncioLavoro: "",
-    periodiInattivita: "",
-    cosaNonInserire: "",
-  },
-};
-
-function validateStep(step, data) {
+function validateStep(
+  step: number,
+  data: QuestionarioData,
+): QuestionarioErrors {
   if (step === 0) {
     const p = data.personali;
-    const e = {};
+    const e: PersonaliErrors = {};
     if (!p.nome.trim()) e.nome = "Inserisci nome e cognome";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email.trim()))
       e.email = "Inserisci un'email valida";
@@ -95,7 +171,7 @@ function validateStep(step, data) {
 
   if (step === 1) {
     const o = data.obiettivo;
-    const e = {};
+    const e: ObiettivoErrors = {};
     if (!o.ruolo.trim()) e.ruolo = "Indica il ruolo che stai cercando";
     if (!o.settore.trim()) e.settore = "Indica il settore";
     if (!o.contratto) e.contratto = "Seleziona un'opzione";
@@ -106,7 +182,7 @@ function validateStep(step, data) {
 
   if (step === 2) {
     const primo = data.esperienze[0];
-    const e0 = {};
+    const e0: EsperienzaErrors = {};
     if (!primo.azienda.trim()) e0.azienda = "Indica l'azienda";
     if (!primo.ruolo.trim()) e0.ruolo = "Indica il ruolo";
     return { esperienze: [e0] };
@@ -114,7 +190,7 @@ function validateStep(step, data) {
 
   if (step === 3) {
     const f = data.formazione;
-    const e = {};
+    const e: FormazioneErrors = {};
     if (!f.scuolaSuperiore.trim())
       e.scuolaSuperiore = "Indica la scuola superiore frequentata";
     return { formazione: e };
@@ -122,7 +198,7 @@ function validateStep(step, data) {
 
   if (step === 4) {
     const c = data.competenze;
-    const e = {};
+    const e: CompetenzeErrors = {};
     if (!c.tecniche.trim()) e.tecniche = "Descrivi le tue competenze tecniche";
     if (!c.lingue.trim()) e.lingue = "Indica le lingue parlate e il livello";
     if (!c.software.trim()) e.software = "Indica gli strumenti che usi";
@@ -130,27 +206,26 @@ function validateStep(step, data) {
   }
 
   const x = data.extra;
-  const e = {};
+  const e: ExtraErrors = {};
   if (!x.disponibilitaTrasferte)
     e.disponibilitaTrasferte = "Seleziona un'opzione";
   return { extra: e };
 }
 
-function hasErrors(errors) {
+function hasErrors(errors: QuestionarioErrors): boolean {
   return Object.values(errors).some((section) =>
     Array.isArray(section)
       ? section.some((item) => Object.keys(item).length > 0)
-      : Object.keys(section).length > 0,
+      : Object.keys(section ?? {}).length > 0,
   );
 }
 
-function riga(etichetta, valore, fallback = "—") {
-  const testo =
-    valore && String(valore).trim() ? String(valore).trim() : fallback;
+function riga(etichetta: string, valore: string, fallback = "—"): string {
+  const testo = valore.trim() ? valore.trim() : fallback;
   return `${etichetta}: ${testo}`;
 }
 
-function buildMessage(data) {
+function buildMessage(data: QuestionarioData): string {
   const p = data.personali;
   const o = data.obiettivo;
   const f = data.formazione;
@@ -239,7 +314,15 @@ ${riga("Cosa non inserire nel CV", x.cosaNonInserire)}
 `.trim();
 }
 
-function Field({ id, label, error, hint, children }) {
+interface FieldProps {
+  id: string;
+  label: string;
+  error?: string;
+  hint?: string;
+  children: ReactNode;
+}
+
+function Field({ id, label, error, hint, children }: FieldProps) {
   return (
     <div className={`q-field${error ? " invalid" : ""}`}>
       <label htmlFor={id}>{label}</label>
@@ -250,9 +333,15 @@ function Field({ id, label, error, hint, children }) {
   );
 }
 
-function StepPersonali({ data, errors, onChange }) {
+interface StepProps {
+  data: QuestionarioData;
+  errors: QuestionarioErrors;
+  onChange: OnSectionChange;
+}
+
+function StepPersonali({ data, errors, onChange }: StepProps) {
   const p = data.personali;
-  const e = errors.personali || {};
+  const e = errors.personali ?? {};
 
   return (
     <div className="q-step-grid">
@@ -261,7 +350,9 @@ function StepPersonali({ data, errors, onChange }) {
           id="nome"
           type="text"
           value={p.nome}
-          onChange={(ev) => onChange("personali", "nome", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("personali", "nome", ev.target.value)
+          }
         />
       </Field>
       <Field id="email" label="Email" error={e.email}>
@@ -269,7 +360,9 @@ function StepPersonali({ data, errors, onChange }) {
           id="email"
           type="email"
           value={p.email}
-          onChange={(ev) => onChange("personali", "email", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("personali", "email", ev.target.value)
+          }
         />
       </Field>
       <Field id="telefono" label="Telefono" error={e.telefono}>
@@ -277,7 +370,9 @@ function StepPersonali({ data, errors, onChange }) {
           id="telefono"
           type="tel"
           value={p.telefono}
-          onChange={(ev) => onChange("personali", "telefono", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("personali", "telefono", ev.target.value)
+          }
         />
       </Field>
       <Field id="citta" label="Città e provincia" error={e.citta}>
@@ -286,16 +381,18 @@ function StepPersonali({ data, errors, onChange }) {
           type="text"
           placeholder="Es. Sassuolo (MO)"
           value={p.citta}
-          onChange={(ev) => onChange("personali", "citta", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("personali", "citta", ev.target.value)
+          }
         />
       </Field>
     </div>
   );
 }
 
-function StepObiettivo({ data, errors, onChange }) {
+function StepObiettivo({ data, errors, onChange }: StepProps) {
   const o = data.obiettivo;
-  const e = errors.obiettivo || {};
+  const e = errors.obiettivo ?? {};
 
   return (
     <div className="q-step-grid">
@@ -304,7 +401,9 @@ function StepObiettivo({ data, errors, onChange }) {
           id="ruolo"
           type="text"
           value={o.ruolo}
-          onChange={(ev) => onChange("obiettivo", "ruolo", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("obiettivo", "ruolo", ev.target.value)
+          }
         />
       </Field>
       <Field id="settore" label="Settore" error={e.settore}>
@@ -312,7 +411,9 @@ function StepObiettivo({ data, errors, onChange }) {
           id="settore"
           type="text"
           value={o.settore}
-          onChange={(ev) => onChange("obiettivo", "settore", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("obiettivo", "settore", ev.target.value)
+          }
         />
       </Field>
       <div className="q-field full">
@@ -320,7 +421,7 @@ function StepObiettivo({ data, errors, onChange }) {
         <textarea
           id="aziendeTarget"
           value={o.aziendeTarget}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
             onChange("obiettivo", "aziendeTarget", ev.target.value)
           }
         />
@@ -333,7 +434,9 @@ function StepObiettivo({ data, errors, onChange }) {
         <select
           id="contratto"
           value={o.contratto}
-          onChange={(ev) => onChange("obiettivo", "contratto", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLSelectElement>) =>
+            onChange("obiettivo", "contratto", ev.target.value)
+          }
         >
           <option value="">Seleziona un'opzione</option>
           {CONTRATTO_OPTIONS.map((opt) => (
@@ -347,7 +450,7 @@ function StepObiettivo({ data, errors, onChange }) {
         <select
           id="smartWorking"
           value={o.smartWorking}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLSelectElement>) =>
             onChange("obiettivo", "smartWorking", ev.target.value)
           }
         >
@@ -367,7 +470,7 @@ function StepObiettivo({ data, errors, onChange }) {
         <select
           id="trasferimento"
           value={o.trasferimento}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLSelectElement>) =>
             onChange("obiettivo", "trasferimento", ev.target.value)
           }
         >
@@ -388,7 +491,7 @@ function StepObiettivo({ data, errors, onChange }) {
           type="text"
           placeholder="Es. 28.000-32.000 € lordi/anno"
           value={o.rangeSalariale}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("obiettivo", "rangeSalariale", ev.target.value)
           }
         />
@@ -397,17 +500,31 @@ function StepObiettivo({ data, errors, onChange }) {
   );
 }
 
-function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
-  const e = error || {};
+interface EsperienzaBlockProps {
+  esperienza: EsperienzaData;
+  index: number;
+  error?: EsperienzaErrors;
+  onField: (field: keyof EsperienzaData, value: EsperienzaFieldValue) => void;
+  onRemove: () => void;
+}
+
+function EsperienzaBlock({
+  esperienza,
+  index,
+  error,
+  onField,
+  onRemove,
+}: EsperienzaBlockProps) {
+  const e = error ?? {};
 
   return (
     <div className="q-block">
       <div className="q-block-head">
         <span className="q-block-title">Esperienza {index + 1}</span>
         {index > 0 && (
-          <button type="button" className="q-link-btn" onClick={onRemove}>
+          <Button type="button" variant="link" onClick={onRemove}>
             Rimuovi
-          </button>
+          </Button>
         )}
       </div>
 
@@ -417,7 +534,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
             id={`azienda-${index}`}
             type="text"
             value={esperienza.azienda}
-            onChange={(ev) => onField("azienda", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+              onField("azienda", ev.target.value)
+            }
           />
         </Field>
         <Field id={`ruolo-${index}`} label="Ruolo" error={e.ruolo}>
@@ -425,7 +544,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
             id={`ruolo-${index}`}
             type="text"
             value={esperienza.ruolo}
-            onChange={(ev) => onField("ruolo", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+              onField("ruolo", ev.target.value)
+            }
           />
         </Field>
 
@@ -435,7 +556,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
             id={`periodoInizio-${index}`}
             type="month"
             value={esperienza.periodoInizio}
-            onChange={(ev) => onField("periodoInizio", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+              onField("periodoInizio", ev.target.value)
+            }
           />
         </div>
         <div className="q-field">
@@ -445,13 +568,17 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
             type="month"
             disabled={esperienza.inCorso}
             value={esperienza.periodoFine}
-            onChange={(ev) => onField("periodoFine", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+              onField("periodoFine", ev.target.value)
+            }
           />
           <label className="q-checkbox">
             <input
               type="checkbox"
               checked={esperienza.inCorso}
-              onChange={(ev) => onField("inCorso", ev.target.checked)}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+                onField("inCorso", ev.target.checked)
+              }
             />
             Attualmente in corso
           </label>
@@ -463,7 +590,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
             id={`settoreEsp-${index}`}
             type="text"
             value={esperienza.settore}
-            onChange={(ev) => onField("settore", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+              onField("settore", ev.target.value)
+            }
           />
         </div>
         <div className="q-field full">
@@ -471,7 +600,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
           <textarea
             id={`mansioni-${index}`}
             value={esperienza.mansioni}
-            onChange={(ev) => onField("mansioni", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
+              onField("mansioni", ev.target.value)
+            }
           />
         </div>
         <div className="q-field full">
@@ -481,7 +612,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
           <textarea
             id={`risultati-${index}`}
             value={esperienza.risultati}
-            onChange={(ev) => onField("risultati", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
+              onField("risultati", ev.target.value)
+            }
           />
         </div>
         <div className="q-field full">
@@ -491,7 +624,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
           <textarea
             id={`tecnologie-${index}`}
             value={esperienza.tecnologie}
-            onChange={(ev) => onField("tecnologie", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
+              onField("tecnologie", ev.target.value)
+            }
           />
         </div>
         <div className="q-field full">
@@ -501,7 +636,9 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
           <textarea
             id={`responsabilita-${index}`}
             value={esperienza.responsabilita}
-            onChange={(ev) => onField("responsabilita", ev.target.value)}
+            onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
+              onField("responsabilita", ev.target.value)
+            }
           />
         </div>
       </div>
@@ -509,8 +646,22 @@ function EsperienzaBlock({ esperienza, index, error, onField, onRemove }) {
   );
 }
 
-function StepEsperienze({ data, errors, onExperienceField, onAdd, onRemove }) {
-  const experienceErrors = errors.esperienze || [];
+interface StepEsperienzeProps {
+  data: QuestionarioData;
+  errors: QuestionarioErrors;
+  onExperienceField: OnExperienceField;
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+}
+
+function StepEsperienze({
+  data,
+  errors,
+  onExperienceField,
+  onAdd,
+  onRemove,
+}: StepEsperienzeProps) {
+  const experienceErrors = errors.esperienze ?? [];
 
   return (
     <div>
@@ -524,16 +675,21 @@ function StepEsperienze({ data, errors, onExperienceField, onAdd, onRemove }) {
           onRemove={() => onRemove(i)}
         />
       ))}
-      <button type="button" className="q-btn-secondary" onClick={onAdd}>
+      <Button
+        type="button"
+        onClick={onAdd}
+        variant="secondary"
+        icon={<PlusIcon size={16} />}
+      >
         Aggiungi un'altra esperienza
-      </button>
+      </Button>
     </div>
   );
 }
 
-function StepFormazione({ data, errors, onChange }) {
+function StepFormazione({ data, errors, onChange }: StepProps) {
   const f = data.formazione;
-  const e = errors.formazione || {};
+  const e = errors.formazione ?? {};
 
   return (
     <div className="q-step-grid">
@@ -546,7 +702,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="scuolaSuperiore"
           type="text"
           value={f.scuolaSuperiore}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "scuolaSuperiore", ev.target.value)
           }
         />
@@ -557,7 +713,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="indirizzo"
           type="text"
           value={f.indirizzo}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "indirizzo", ev.target.value)
           }
         />
@@ -568,7 +724,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="annoDiploma"
           type="text"
           value={f.annoDiploma}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "annoDiploma", ev.target.value)
           }
         />
@@ -579,7 +735,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="votoDiploma"
           type="text"
           value={f.votoDiploma}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "votoDiploma", ev.target.value)
           }
         />
@@ -595,7 +751,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="universita"
           type="text"
           value={f.universita}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "universita", ev.target.value)
           }
         />
@@ -606,7 +762,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="corsoLaurea"
           type="text"
           value={f.corsoLaurea}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "corsoLaurea", ev.target.value)
           }
         />
@@ -617,7 +773,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="annoLaurea"
           type="text"
           value={f.annoLaurea}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "annoLaurea", ev.target.value)
           }
         />
@@ -628,7 +784,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="votoLaurea"
           type="text"
           value={f.votoLaurea}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "votoLaurea", ev.target.value)
           }
         />
@@ -639,7 +795,7 @@ function StepFormazione({ data, errors, onChange }) {
           id="titoloTesi"
           type="text"
           value={f.titoloTesi}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
             onChange("formazione", "titoloTesi", ev.target.value)
           }
         />
@@ -651,7 +807,7 @@ function StepFormazione({ data, errors, onChange }) {
         <textarea
           id="masterCorsi"
           value={f.masterCorsi}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
             onChange("formazione", "masterCorsi", ev.target.value)
           }
         />
@@ -660,9 +816,9 @@ function StepFormazione({ data, errors, onChange }) {
   );
 }
 
-function StepCompetenze({ data, errors, onChange }) {
+function StepCompetenze({ data, errors, onChange }: StepProps) {
   const c = data.competenze;
-  const e = errors.competenze || {};
+  const e = errors.competenze ?? {};
 
   return (
     <div className="q-step-grid">
@@ -671,7 +827,9 @@ function StepCompetenze({ data, errors, onChange }) {
         <textarea
           id="tecniche"
           value={c.tecniche}
-          onChange={(ev) => onChange("competenze", "tecniche", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
+            onChange("competenze", "tecniche", ev.target.value)
+          }
         />
         {e.tecniche && <span className="q-error-text">{e.tecniche}</span>}
       </div>
@@ -682,7 +840,9 @@ function StepCompetenze({ data, errors, onChange }) {
           type="text"
           placeholder="Es. Inglese B2, Francese A2"
           value={c.lingue}
-          onChange={(ev) => onChange("competenze", "lingue", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("competenze", "lingue", ev.target.value)
+          }
         />
         {e.lingue && <span className="q-error-text">{e.lingue}</span>}
       </div>
@@ -691,7 +851,9 @@ function StepCompetenze({ data, errors, onChange }) {
         <textarea
           id="software"
           value={c.software}
-          onChange={(ev) => onChange("competenze", "software", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
+            onChange("competenze", "software", ev.target.value)
+          }
         />
         {e.software && <span className="q-error-text">{e.software}</span>}
       </div>
@@ -702,7 +864,7 @@ function StepCompetenze({ data, errors, onChange }) {
         <textarea
           id="certificazioni"
           value={c.certificazioni}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
             onChange("competenze", "certificazioni", ev.target.value)
           }
         />
@@ -715,7 +877,7 @@ function StepCompetenze({ data, errors, onChange }) {
         <textarea
           id="softSkills"
           value={c.softSkills}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
             onChange("competenze", "softSkills", ev.target.value)
           }
         />
@@ -725,9 +887,9 @@ function StepCompetenze({ data, errors, onChange }) {
   );
 }
 
-function StepExtra({ data, errors, onChange }) {
+function StepExtra({ data, errors, onChange }: StepProps) {
   const x = data.extra;
-  const e = errors.extra || {};
+  const e = errors.extra ?? {};
 
   return (
     <div className="q-step-grid">
@@ -737,7 +899,9 @@ function StepExtra({ data, errors, onChange }) {
           id="hobby"
           type="text"
           value={x.hobby}
-          onChange={(ev) => onChange("extra", "hobby", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("extra", "hobby", ev.target.value)
+          }
         />
       </div>
       <div className="q-field">
@@ -746,7 +910,9 @@ function StepExtra({ data, errors, onChange }) {
           id="patente"
           type="text"
           value={x.patente}
-          onChange={(ev) => onChange("extra", "patente", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("extra", "patente", ev.target.value)
+          }
         />
       </div>
       <Field
@@ -757,7 +923,7 @@ function StepExtra({ data, errors, onChange }) {
         <select
           id="disponibilitaTrasferte"
           value={x.disponibilitaTrasferte}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLSelectElement>) =>
             onChange("extra", "disponibilitaTrasferte", ev.target.value)
           }
         >
@@ -777,7 +943,9 @@ function StepExtra({ data, errors, onChange }) {
           id="portfolio"
           type="text"
           value={x.portfolio}
-          onChange={(ev) => onChange("extra", "portfolio", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("extra", "portfolio", ev.target.value)
+          }
         />
       </div>
       <div className="q-field">
@@ -786,7 +954,9 @@ function StepExtra({ data, errors, onChange }) {
           id="linkedin"
           type="text"
           value={x.linkedin}
-          onChange={(ev) => onChange("extra", "linkedin", ev.target.value)}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+            onChange("extra", "linkedin", ev.target.value)
+          }
         />
       </div>
 
@@ -802,7 +972,7 @@ function StepExtra({ data, errors, onChange }) {
         <textarea
           id="annuncioLavoro"
           value={x.annuncioLavoro}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
             onChange("extra", "annuncioLavoro", ev.target.value)
           }
         />
@@ -814,7 +984,7 @@ function StepExtra({ data, errors, onChange }) {
         <textarea
           id="periodiInattivita"
           value={x.periodiInattivita}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
             onChange("extra", "periodiInattivita", ev.target.value)
           }
         />
@@ -830,7 +1000,7 @@ function StepExtra({ data, errors, onChange }) {
         <textarea
           id="cosaNonInserire"
           value={x.cosaNonInserire}
-          onChange={(ev) =>
+          onChange={(ev: ChangeEvent<HTMLTextAreaElement>) =>
             onChange("extra", "cosaNonInserire", ev.target.value)
           }
         />
@@ -839,47 +1009,104 @@ function StepExtra({ data, errors, onChange }) {
   );
 }
 
+interface Web3FormsResponse {
+  success: boolean;
+}
+
 export default function Questionario() {
+  const { user, logout } = useAuthStore();
+
+  const EMPTY_QUESTIONARIO: QuestionarioData = {
+    personali: {
+      nome: user?.name ?? "",
+      email: user?.email ?? "",
+      telefono: "",
+      citta: "",
+    },
+    obiettivo: {
+      ruolo: "",
+      settore: "",
+      aziendeTarget: "",
+      contratto: "",
+      smartWorking: "",
+      trasferimento: "",
+      rangeSalariale: "",
+    },
+    esperienze: [emptyEsperienza()],
+    formazione: {
+      scuolaSuperiore: "",
+      indirizzo: "",
+      annoDiploma: "",
+      votoDiploma: "",
+      universita: "",
+      corsoLaurea: "",
+      annoLaurea: "",
+      votoLaurea: "",
+      titoloTesi: "",
+      masterCorsi: "",
+    },
+    competenze: {
+      tecniche: "",
+      lingue: "",
+      software: "",
+      certificazioni: "",
+      softSkills: "",
+    },
+    extra: {
+      hobby: "",
+      patente: "",
+      disponibilitaTrasferte: "",
+      portfolio: "",
+      linkedin: "",
+      annuncioLavoro: "",
+      periodiInattivita: "",
+      cosaNonInserire: "",
+    },
+  };
+
   const [step, setStep] = useState(0);
-  const [data, setData] = useState(EMPTY_QUESTIONARIO);
-  const [errors, setErrors] = useState({});
+  const [data, setData] = useState<QuestionarioData>(EMPTY_QUESTIONARIO);
+  const [errors, setErrors] = useState<QuestionarioErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+  const accessKey: string | undefined = import.meta.env
+    .VITE_WEB3FORMS_ACCESS_KEY;
   const isLastStep = step === STEP_TITLES.length - 1;
 
-  function onChange(section, field, value) {
-    setData((d) => ({ ...d, [section]: { ...d[section], [field]: value } }));
+  const onChange: OnSectionChange = (section, field, value) => {
+    setData((d) => ({
+      ...d,
+      [section]: { ...d[section], [field]: value },
+    }));
     setErrors((err) => {
-      if (!err[section] || !err[section][field]) return err;
-      const next = { ...err[section] };
+      const sectionErrors = err[section] as
+        | Partial<Record<keyof SectionDataMap[typeof section], string>>
+        | undefined;
+      if (!sectionErrors || !sectionErrors[field]) return err;
+      const next = { ...sectionErrors };
       delete next[field];
       return { ...err, [section]: next };
     });
-  }
+  };
 
-  function onExperienceField(index, field, value) {
+  const onExperienceField: OnExperienceField = (index, field, value) => {
     setData((d) => {
       const list = [...d.esperienze];
       list[index] = { ...list[index], [field]: value };
       return { ...d, esperienze: list };
     });
     setErrors((err) => {
-      if (
-        !err.esperienze ||
-        !err.esperienze[index] ||
-        !err.esperienze[index][field]
-      )
-        return err;
-      const list = [...err.esperienze];
+      const experienceErrors = err.esperienze;
+      if (!experienceErrors?.[index]?.[field]) return err;
+      const list = [...experienceErrors];
       const next = { ...list[index] };
       delete next[field];
       list[index] = next;
       return { ...err, esperienze: list };
     });
-  }
+  };
 
   function addEsperienza() {
     setData((d) => ({
@@ -888,7 +1115,7 @@ export default function Questionario() {
     }));
   }
 
-  function removeEsperienza(index) {
+  function removeEsperienza(index: number) {
     setData((d) => ({
       ...d,
       esperienze: d.esperienze.filter((_, i) => i !== index),
@@ -929,7 +1156,7 @@ export default function Questionario() {
         }),
       });
 
-      const result = await res.json();
+      const result = (await res.json()) as Web3FormsResponse;
 
       if (result.success) {
         setSubmitted(true);
@@ -945,7 +1172,7 @@ export default function Questionario() {
     }
   }
 
-  function handleFormSubmit(e) {
+  function handleFormSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const stepErrors = validateStep(step, data);
@@ -1002,14 +1229,31 @@ export default function Questionario() {
     }
   }
 
+  const mutation = useMutation({
+    mutationFn: logout,
+  });
+
+  const handleLogout = async () => await mutation.mutateAsync();
+
   return (
     <div className="questionario-page">
       <header className="q-header">
-        <div className="wrap q-header-inner">
-          <div className="brand-name">Massimo Baschieri</div>
-          <div className="brand-tag">
-            Questionario per l'avvio della lavorazione del CV
+        <div className="wrap brand">
+          <div>
+            <div className="brand-name">Benvenuto {user?.name}</div>
+            <div className="brand-tag">
+              ora puoi compilare il questionario per l'avvio della lavorazione
+              del CV
+            </div>
           </div>
+          <Button
+            variant="secondary"
+            onClick={handleLogout}
+            icon={<LogOut size={16} />}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? "Uscita in corso..." : "Esci"}
+          </Button>
         </div>
       </header>
 
@@ -1057,21 +1301,17 @@ export default function Questionario() {
 
               <div className="q-nav">
                 {step > 0 && (
-                  <button
-                    type="button"
-                    className="q-btn-secondary"
-                    onClick={goBack}
-                  >
+                  <Button type="button" variant="secondary" onClick={goBack}>
                     Indietro
-                  </button>
+                  </Button>
                 )}
-                <button type="submit" disabled={submitting}>
+                <Button type="submit" disabled={submitting}>
                   {isLastStep
                     ? submitting
                       ? "Invio in corso..."
                       : "Invia questionario"
                     : "Avanti"}
-                </button>
+                </Button>
                 {submitError && (
                   <span className="q-status-msg err">{submitError}</span>
                 )}

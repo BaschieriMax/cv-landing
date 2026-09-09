@@ -6,7 +6,7 @@ import { router } from "./routes/router";
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />,
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 };

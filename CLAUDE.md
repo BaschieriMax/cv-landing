@@ -170,7 +170,15 @@ quello del questionario, che diventava una grid a 2 colonne e appariva
 percorso di navigazione del bug precedente: icona home nel questionario
 poi pulsante indietro del browser). Corretto scopandolo a
 `.contact form` — nessun effetto visivo sulla homepage, dato che il
-form è sempre dentro `.contact` lì. **Lezione generale**: in `App.css`
+form è sempre dentro `.contact` lì. Occhio: quando si alza la
+specificità di una regola base, va alzata allo stesso modo l'eventuale
+override nella media query sotto i 760px, altrimenti quello con
+specificità più bassa smette di vincere e si perde il comportamento
+responsive (è successo proprio con questa regola: `.contact form`
+aveva più specificità del vecchio `form` nella media query, che quindi
+non riusciva più a forzare `grid-template-columns: 1fr` su mobile —
+corretto scopando anche quello a `.contact form`). **Lezione
+generale**: in `App.css`
 non lasciare selettori di elemento HTML nudi (`form`, `header`,
 `footer`, ecc.) che si applicano solo a una sezione specifica della
 homepage — vanno sempre scoperti a una classe di quella sezione (es.

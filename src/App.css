@@ -255,7 +255,7 @@ footer a:hover {
   .service-card.span-3 {
     grid-column: span 1;
   }
-  form {
+  .contact form {
     grid-template-columns: 1fr;
   }
 }

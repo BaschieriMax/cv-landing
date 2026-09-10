@@ -117,7 +117,6 @@ export default function Homepage() {
 
     if (Object.keys(validationErrors).length > 0) {
       setStatus({ type: "err", message: "Controlla i campi evidenziati." });
-
       return;
     }
 
@@ -127,7 +126,6 @@ export default function Homepage() {
         message:
           "Access key Web3Forms mancante: configurala nel file .env (vedi README).",
       });
-
       return;
     }
 
@@ -360,8 +358,12 @@ export default function Homepage() {
       </section>
 
       <footer>
-        <div className="wrap">
-          Sassuolo (MO) — risposta garantita entro 24 ore
+        <div className="wrap brand">
+          <span>© {new Date().getFullYear()} Massimo Baschieri</span>
+          <a href="mailto:baschieri.massimo007@gmail.com">
+            baschieri.massimo007@gmail.com
+          </a>
+          <span>Sassuolo (MO)</span>
         </div>
       </footer>
     </>

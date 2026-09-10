@@ -160,6 +160,24 @@ futuro si aggiungono altre combinazioni di classi condivise tra pagine
 lazy diverse, applicare lo stesso pattern (selettore composto) invece di
 affidarsi all'ordine del CSS.
 
+**Stessa classe di bug, variante più subdola**: `App.css` (homepage)
+aveva un selettore `form { display: grid; grid-template-columns: 1fr
+1fr; ... }` **non scoperto a nessuna classe**, pensato solo per il form
+di contatto dentro `.contact`. Una volta caricato il CSS della homepage,
+quel selettore si applicava a *qualsiasi* `<form>` della pagina, incluso
+quello del questionario, che diventava una grid a 2 colonne e appariva
+"compattato" nella prima colonna dopo essere tornati da "/" (stesso
+percorso di navigazione del bug precedente: icona home nel questionario
+poi pulsante indietro del browser). Corretto scopandolo a
+`.contact form` — nessun effetto visivo sulla homepage, dato che il
+form è sempre dentro `.contact` lì. **Lezione generale**: in `App.css`
+non lasciare selettori di elemento HTML nudi (`form`, `header`,
+`footer`, ecc.) che si applicano solo a una sezione specifica della
+homepage — vanno sempre scoperti a una classe di quella sezione (es.
+`.contact form`), perché entrambi i CSS delle pagine lazy convivono
+nello stesso documento non appena l'utente ha visitato sia "/" che
+"/questionario" nella stessa sessione del browser.
+
 ## Variabili d'ambiente
 
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — necessarie per

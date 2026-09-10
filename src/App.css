@@ -1,12 +1,11 @@
+header {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+}
 .wrap {
   max-width: 960px;
   margin: 0 auto;
   padding: 0 28px;
-}
-
-header {
-  padding: 28px 0;
-  border-bottom: 1px solid var(--line);
 }
 .brand {
   display: flex;
@@ -133,7 +132,7 @@ header {
   color: var(--ink-soft);
   font-size: 15px;
 }
-form {
+.contact form {
   margin-top: 40px;
   display: grid;
   grid-template-columns: 1fr 1fr;

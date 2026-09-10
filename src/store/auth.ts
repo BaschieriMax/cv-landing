@@ -43,19 +43,31 @@ const ensureProfile = async (
 
   if (existing) return existing;
 
+  // Upsert atomico invece di "controlla poi inserisci": due chiamate
+  // concorrenti per lo stesso authId (es. hydrate() e l'evento SIGNED_IN
+  // che scattano vicini nel tempo appena dopo la conferma email) altrimenti
+  // vedono entrambe "non esiste ancora" e finiscono in conflitto sul
+  // vincolo univoco auth_id.
   const { data, error } = await supabase
     .from("users")
-    .insert([{ name: fallbackName, email, auth_id: authId }])
+    .upsert(
+      { name: fallbackName, email, auth_id: authId },
+      { onConflict: "auth_id", ignoreDuplicates: true },
+    )
     .select("id, name, email")
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    console.error("Error creating profile:", error);
+  if (data) return { ...data, authId };
 
-    return { authId, name: fallbackName, email };
-  }
+  // ignoreDuplicates: true non restituisce la riga se c'era già un
+  // conflitto (un'altra chiamata concorrente l'ha creata per prima).
+  const profile = await fetchProfile(authId);
 
-  return { ...data, authId };
+  if (profile) return profile;
+
+  if (error) console.error("Error creating profile:", error);
+
+  return { authId, name: fallbackName, email };
 };
 
 export const useAuthStore = create<State & Action>()((set, get) => ({

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
+import { useNavigate } from "react-router";
 import "../Questionario.css";
 import { useAuthStore } from "../store/auth";
 import Button from "../components/Button";
@@ -1015,6 +1016,7 @@ interface Web3FormsResponse {
 
 export default function Questionario() {
   const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
 
   const EMPTY_QUESTIONARIO: QuestionarioData = {
     personali: {
@@ -1239,11 +1241,21 @@ export default function Questionario() {
     <div className="questionario-page">
       <header className="q-header">
         <div className="wrap brand">
-          <div className="q-header-text">
-            <div className="brand-name">Benvenuto {user?.name}</div>
-            <div className="brand-tag">
-              ora puoi compilare il questionario per l'avvio della lavorazione
-              del CV
+          <div className="q-header-left">
+            <button
+              type="button"
+              className="q-header-home"
+              onClick={() => navigate("/")}
+              aria-label="Torna alla home"
+            >
+              MB
+            </button>
+            <div className="q-header-text">
+              <div className="brand-name">Benvenuto {user?.name}</div>
+              <div className="brand-tag">
+                ora puoi compilare il questionario per l'avvio della lavorazione
+                del CV
+              </div>
             </div>
           </div>
           <Button

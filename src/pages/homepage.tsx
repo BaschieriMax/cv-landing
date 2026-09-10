@@ -363,7 +363,6 @@ export default function Homepage() {
           <a href="mailto:baschieri.massimo007@gmail.com">
             baschieri.massimo007@gmail.com
           </a>
-          <span>Sassuolo (MO)</span>
         </div>
       </footer>
     </>

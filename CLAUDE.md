@@ -228,6 +228,11 @@ orientato al beneficio per il cliente. Valgono anche per i testi di
 login/signup e per i messaggi di errore dell'autenticazione (es. errori
 Supabase): stesso registro diretto, senza "Errore:" davanti.
 
+Il footer di `homepage.tsx` mostra solo copyright ed email di contatto —
+la città ("Sassuolo (MO)") è stata rimossa perché già presente
+nell'header ("Sassuolo, Modena") sulla stessa pagina, quindi era pura
+ridondanza. Non riaggiungerla nel footer senza un motivo concreto.
+
 ## Convenzioni di design
 
 Vedi la skill `design-system` per palette colori, font e principi

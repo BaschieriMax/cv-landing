@@ -33,6 +33,11 @@
   color: var(--ink);
 }
 
+.auth-tab:hover:not(.active) {
+  background: var(--paper);
+  color: var(--ink);
+}
+
 .auth-card-head {
   padding: 28px 28px 0;
 }

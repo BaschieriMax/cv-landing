@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, Outlet } from "react-router";
+import { Outlet } from "react-router";
 import { useAuthStore } from "../store/auth";
 import LoginFormZod from "../components/form/login-form-zod";
 import "./AuthLayout.css";
@@ -25,9 +25,6 @@ const AuthLayout = () => {
       <div className="auth-layout-gate">
         <div className="auth-layout-gate-inner">
           <LoginFormZod />
-          <Link className="auth-layout-back" to="/">
-            ← Torna alla home
-          </Link>
         </div>
       </div>
     );

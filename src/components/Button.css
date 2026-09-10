@@ -6,7 +6,7 @@
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 15px;
   font-weight: 500;
-  border-radius: 2px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   line-height: 1;
 }

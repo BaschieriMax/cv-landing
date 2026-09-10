@@ -24,7 +24,7 @@
   padding: 11px 12px;
   background: var(--paper-raised);
   border: 1px solid var(--line-strong);
-  border-radius: 2px;
+  border-radius: var(--radius-md);
   color: var(--ink);
   width: 100%;
 }
@@ -84,8 +84,29 @@
   font-size: 14px;
 }
 
+.fz-note {
+  min-height: 18px;
+}
+
 .fz-error {
   margin: 0;
   font-size: 12px;
+  line-height: 18px;
   color: var(--danger);
+}
+
+.fz-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-soft);
+}
+
+.fz-status {
+  display: flex;
+  flex-direction: column;
+}
+
+.fz-status:empty {
+  display: none;
 }

@@ -24,9 +24,6 @@ const AuthLayout = () => {
     return (
       <div className="auth-layout-gate">
         <div className="auth-layout-gate-inner">
-          <p className="auth-layout-gate-sub">
-            Serve un account per compilare il questionario.
-          </p>
           <LoginFormZod />
           <Link className="auth-layout-back" to="/">
             ← Torna alla home

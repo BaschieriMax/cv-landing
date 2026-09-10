@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import type { ReactNode } from "react";
 import {
   useForm,
   type DefaultValues,
@@ -19,6 +20,7 @@ interface FormZodProps<T extends z.ZodType<unknown, FieldValues>> {
   action: (data: z.output<T>) => void;
   submitLabel?: string;
   submittingLabel?: string;
+  statusSlot?: ReactNode;
 }
 
 interface PasswordInputProps {
@@ -75,6 +77,7 @@ const FormZod = <T extends z.ZodType<unknown, FieldValues>>({
   action,
   submitLabel = "Invia",
   submittingLabel = "Invio in corso...",
+  statusSlot,
 }: FormZodProps<T>) => {
   const formId = useId();
   const {
@@ -213,14 +216,22 @@ const FormZod = <T extends z.ZodType<unknown, FieldValues>>({
               {field.label ?? String(field.name)}
             </label>
             {renderInput(field)}
-            {errorMessage && (
-              <p className="fz-error" id={errorId}>
-                {errorMessage}
-              </p>
-            )}
+            <div className="fz-note">
+              {errorMessage ? (
+                <p className="fz-error" id={errorId}>
+                  {errorMessage}
+                </p>
+              ) : (
+                field.hint && <p className="fz-hint">{field.hint}</p>
+              )}
+            </div>
           </div>
         );
       })}
+
+      <div className="fz-status" aria-live="polite">
+        {statusSlot}
+      </div>
 
       <Button disabled={isSubmitting}>
         {isSubmitting ? submittingLabel : submitLabel}

@@ -116,32 +116,59 @@ export const useAuthStore = create<State & Action>()((set, get) => ({
     set({ user: { ...user, name: newName } });
   },
   hydrate: () => {
+    // Sessione valida lato Supabase Auth ma senza più una riga in
+    // public.users (es. rimossa manualmente dal Table Editor): non è un
+    // account da "riparare" ricreandola, è un accesso non più autorizzato.
+    const revokeSession = async () => {
+      set({ user: null, loading: false });
+      await supabase.auth.signOut();
+    };
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const profile = await ensureProfile(
-          session.user.id,
-          session.user.email ?? "",
-          session.user.user_metadata?.name ?? "",
-        );
-        set({ user: profile, loading: false });
-      } else {
+      if (!session?.user) {
         set({ user: null, loading: false });
+        return;
       }
+
+      const profile = await fetchProfile(session.user.id);
+
+      if (!profile) {
+        await revokeSession();
+        return;
+      }
+
+      set({ user: profile, loading: false });
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!session?.user) {
+        set({ user: null });
+        return;
+      }
+
+      // Solo un login/signup appena avvenuto in questa sessione può creare
+      // il profilo se manca; ogni altro evento (refresh token, sessione
+      // ripristinata) deve solo verificarlo.
+      if (event === "SIGNED_IN") {
         const profile = await ensureProfile(
           session.user.id,
           session.user.email ?? "",
           session.user.user_metadata?.name ?? "",
         );
         set({ user: profile });
-      } else {
-        set({ user: null });
+        return;
       }
+
+      const profile = await fetchProfile(session.user.id);
+
+      if (!profile) {
+        await revokeSession();
+        return;
+      }
+
+      set({ user: profile });
     });
 
     return () => subscription.unsubscribe();

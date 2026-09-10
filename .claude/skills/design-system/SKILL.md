@@ -8,13 +8,17 @@ description: Palette colori, tipografia e principi di layout usati nel sito cv-l
 ## Filosofia
 
 Stile editoriale sobrio: bordi sottili (1px), niente ombre, niente
-gradienti, niente card con angoli molto arrotondati. L'ispirazione è più
-vicina a un documento professionale curato che a un template SaaS. Il
-colore oro (`--gold-deep`) è l'unico accento cromatico: va usato con
-parsimonia, solo per numeri chiave, badge, o elementi che devono
-davvero spiccare — mai come colore di sfondo diffuso.
+gradienti, angoli morbidi ma contenuti (vedi variabili di raggio sotto,
+non arrotondamenti da template SaaS). L'ispirazione è più vicina a un
+documento professionale curato che a un template SaaS. Il colore oro
+(`--gold-deep`) è l'unico accento cromatico: va usato con parsimonia,
+solo per numeri chiave, badge, o elementi che devono davvero spiccare —
+mai come colore di sfondo diffuso.
 
-## Palette (definita in src/index.css)
+## Palette e raggi (definiti in src/variables.css)
+
+`src/index.css` importa `src/variables.css` con `@import`; è quel file,
+non più `:root` dentro `index.css`, a definire le variabili globali:
 
 ```css
 --ink: #1e2a38;            /* testo principale, sfondo card in evidenza */
@@ -26,6 +30,9 @@ davvero spiccare — mai come colore di sfondo diffuso.
 --line: rgba(30, 42, 56, 0.14);         /* bordi standard */
 --line-strong: rgba(30, 42, 56, 0.28);  /* bordi enfatizzati */
 --danger: #9a3324;         /* errori di validazione */
+--radius-sm: 4px;          /* definita, non ancora usata in nessun componente */
+--radius-md: 8px;          /* raggio in uso ovunque oggi: bottoni, input/select/textarea, service-card */
+--radius-lg: 12px;         /* definita, non ancora usata in nessun componente */
 ```
 
 Non introdurre nuovi colori senza necessità reale — se serve un colore
@@ -34,6 +41,12 @@ questa palette (es. verde smorzato, non un verde acceso da UI kit).
 Il verde già usato per i messaggi di successo è `#3b6d11`, non in
 variabile ma inline in App.css — se diventa ricorrente, promuovilo a
 variabile CSS.
+
+Ogni `border-radius` va sempre espresso con una di queste tre variabili,
+mai con un valore in px scritto a mano — anche per componenti nuovi.
+Oggi tutto usa `--radius-md`; `--radius-sm`/`--radius-lg` sono lì per
+differenziare in futuro elementi più piccoli (badge, tag) o più grandi
+(card, modali) senza inventare nuovi valori arbitrari.
 
 ## Tipografia
 
@@ -72,8 +85,11 @@ senza necessità — il sito è pensato per restare semplice.
 - Ombre (`box-shadow`) decorative — l'unico uso ammesso è un eventuale
   focus ring accessibile, non decorazione di card
 - Gradienti di qualsiasi tipo
-- Border-radius superiori a 2px sugli elementi attuali (input, bottoni,
-  badge) — il sito usa angoli quasi vivi di proposito, è parte dello
-  stile editoriale scelto
-- Icone decorative superflue — il sito attualmente non ne usa nessuna,
-  mantenerlo pulito piuttosto che aggiungerne per riempire spazio
+- Border-radius scritti come valore fisso in px invece che con
+  `var(--radius-sm|md|lg)` — anche se il numero coincidesse con uno di
+  quelli attuali, usa sempre la variabile
+- Angoli molto arrotondati stile SaaS (pill button, card con raggio
+  >12px): il tetto è `--radius-lg` (12px), pensato per i casi che ne
+  hanno davvero bisogno, non per l'uso di default
+- Icone decorative superflue — usale solo con una funzione (stato,
+  azione), non per riempire spazio

@@ -33,6 +33,7 @@ interface BaseField<T> {
   placeholder?: string;
   disabled?: boolean;
   autoComplete?: string;
+  hint?: string;
 }
 
 export type FormFieldProps<T> =

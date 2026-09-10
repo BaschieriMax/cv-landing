@@ -11,7 +11,6 @@ import { translateAuthError } from "../../utils/auth-errors";
 
 import FormZod from "./form-zod";
 import "./login-form-zod.css";
-import Button from "../Button";
 
 const loginFields = [
   { name: "email", label: "Email", type: "email", autoComplete: "email" },
@@ -31,6 +30,7 @@ const signupFields = [
     label: "Password",
     type: "password",
     autoComplete: "new-password",
+    hint: "Minimo 6 caratteri",
   },
   {
     name: "confirmPassword",
@@ -78,17 +78,46 @@ const LoginFormZod = () => {
     }
   };
 
-  const toggleMode = () => {
-    setMode((m) => (m === "login" ? "signup" : "login"));
+  const switchMode = (next: Mode) => {
+    if (next === mode) return;
+    setMode(next);
     setError(null);
     setInfo(null);
   };
 
+  const statusMessage = error ? (
+    <p className="auth-status auth-status-error">{error}</p>
+  ) : info ? (
+    <p className="auth-status auth-status-info">{info}</p>
+  ) : null;
+
   return (
-    <div className="auth-form">
-      <h2 className="auth-form-title">
-        {mode === "login" ? "Accedi" : "Crea un account"}
-      </h2>
+    <div className="auth-card">
+      <div className="auth-tabs">
+        <button
+          type="button"
+          className={`auth-tab${mode === "login" ? " active" : ""}`}
+          onClick={() => switchMode("login")}
+        >
+          Accedi
+        </button>
+        <button
+          type="button"
+          className={`auth-tab${mode === "signup" ? " active" : ""}`}
+          onClick={() => switchMode("signup")}
+        >
+          Registrati
+        </button>
+      </div>
+
+      <div className="auth-card-head">
+        <h2>{mode === "login" ? "Accedi" : "Crea un account"}</h2>
+        <p>
+          {mode === "login"
+            ? "Serve un account per compilare il questionario."
+            : "Bastano nome, email e una password: due minuti e sei dentro."}
+        </p>
+      </div>
 
       {mode === "login" ? (
         <FormZod
@@ -98,6 +127,7 @@ const LoginFormZod = () => {
           action={onLogin}
           submitLabel="Accedi"
           submittingLabel="Accesso in corso..."
+          statusSlot={statusMessage}
         />
       ) : (
         <FormZod
@@ -107,21 +137,9 @@ const LoginFormZod = () => {
           action={onSignup}
           submitLabel="Crea account"
           submittingLabel="Registrazione in corso..."
+          statusSlot={statusMessage}
         />
       )}
-
-      {error && (
-        <p className="auth-form-message auth-form-message-error">{error}</p>
-      )}
-      {info && (
-        <p className="auth-form-message auth-form-message-info">{info}</p>
-      )}
-
-      <Button type="button" className="auth-form-toggle" onClick={toggleMode}>
-        {mode === "login"
-          ? "Non hai un account? Registrati"
-          : "Hai già un account? Accedi"}
-      </Button>
     </div>
   );
 };

@@ -11,24 +11,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 28px;
+  padding: 48px 24px;
 }
 
 .auth-layout-gate-inner {
   width: 100%;
   max-width: 420px;
-  text-align: center;
-}
-
-.auth-layout-gate-sub {
-  margin: 0 0 28px;
-  color: var(--ink-soft);
-  font-size: 15px;
 }
 
 .auth-layout-back {
   display: inline-block;
-  margin-top: 24px;
+  margin-top: 20px;
   font-size: 13px;
   color: var(--ink-soft);
   text-decoration: none;

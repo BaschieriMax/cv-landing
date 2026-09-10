@@ -50,7 +50,9 @@ src/
   App.tsx                      root: QueryClientProvider + RouterProvider
   App.css                      stili della landing page (homepage)
   Questionario.css             stili del wizard questionario
-  index.css                    reset globale e variabili di colore/font (condiviso)
+  index.css                    reset globale, importa variables.css
+  variables.css                 variabili CSS globali: palette colori + raggi
+                                 (--radius-sm/md/lg) — unica fonte di questi valori
   main.tsx                     entry point React (monta <App />)
   pages/
     homepage.tsx                landing page "/": hero, pacchetti, form di contatto
@@ -186,12 +188,34 @@ Supabase): stesso registro diretto, senza "Errore:" davanti.
 ## Convenzioni di design
 
 Vedi la skill `design-system` per palette colori, font e principi
-layout. In sintesi: palette ink/paper/gold definita in `src/index.css`,
-font Source Serif 4 (titoli) + IBM Plex Sans (corpo testo), niente
-gradienti, ombre o effetti decorativi — è uno stile editoriale sobrio,
-non un template SaaS con card arrotondate ovunque. Vale anche per
-`AuthLayout` e per i form di login/signup: niente stile "card SaaS" con
-ombre o angoli molto arrotondati, restare coerenti con il resto del sito.
+layout. In sintesi: palette ink/paper/gold definita in `src/variables.css`
+(importata da `src/index.css`), font Source Serif 4 (titoli) + IBM Plex
+Sans (corpo testo), niente gradienti, ombre o effetti decorativi — è
+uno stile editoriale sobrio, non un template SaaS con card arrotondate
+ovunque.
+
+Il raggio degli angoli non è più un valore fisso: `src/variables.css`
+definisce `--radius-sm` (4px), `--radius-md` (8px, quello in uso oggi
+su bottoni, input/select/textarea, service-card) e `--radius-lg` (12px).
+Ogni `border-radius` va scritto con una di queste variabili, mai un
+valore in px a mano — anche se numericamente coincidesse.
+
+Vale anche per `AuthLayout` e per i form di login/signup: niente stile
+"card SaaS" con ombre o angoli oltre `--radius-lg`, restare coerenti con
+il resto del sito.
+
+Il form di login/signup è stato ridisegnato via Claude Design (canvas
+"Login Form Redesign") e implementato in `login-form-zod.tsx`/`.css`:
+una card unica (`--radius-lg`) con due tab "Accedi"/"Registrati" in
+testa (indicatore `--gold-deep` sul tab attivo) invece del vecchio
+titolo statico + link di switch in fondo. Titolo e sottotitolo dentro
+la card cambiano in base al tab attivo. `FormZod` (`form-zod.tsx`) ha
+due aggiunte generiche per supportarlo, riusabili da futuri form:
+`hint` per campo (testo mostrato quando non c'è errore, in un'area a
+altezza fissa — 18px — per non far "saltare" il layout quando appare
+un errore) e `statusSlot` (contenuto in una regione `aria-live`,
+renderizzato prima del bottone di invio: qui ci va il messaggio di
+errore/successo del login/signup).
 
 ## Cosa NON fare
 
@@ -201,8 +225,9 @@ ombre o angoli molto arrotondati, restare coerenti con il resto del sito.
   che l'utente lo chieda esplicitamente.
 - Non rimuovere o bypassare `AuthLayout` per "semplificare" l'accesso a
   "/questionario" — il gate è voluto, non un compromesso temporaneo.
-- Non cambiare la palette colori o i font senza conferma esplicita —
-  fanno parte dell'identità visiva già scelta e testata.
+- Non cambiare la palette colori, i font o le variabili di raggio
+  (`--radius-sm/md/lg` in `src/variables.css`) senza conferma esplicita
+  — fanno parte dell'identità visiva già scelta e testata.
 - Non committare mai `.env` — è già in `.gitignore`, non toglierlo.
 - Non duplicare ulteriormente `homepage.tsx`/`new-homepage.tsx` — sono
   identici di proposito in questa fase; se si sceglie una versione

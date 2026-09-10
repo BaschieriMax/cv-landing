@@ -67,7 +67,8 @@
   cursor: pointer;
 }
 
-.fz-password-toggle:hover {
+.fz-password-toggle:hover:not(:disabled) {
+  background: none;
   color: var(--ink);
 }
 

@@ -204,6 +204,23 @@ ecc.), va esplicitato ogni stato (default, hover, active, disabled) che
 il componente usa, altrimenti gli stati non coperti ricadono sul
 selettore globale.
 
+**Terza variante, ancora più subdola**: `.fz-password-toggle:hover`
+(in `form-zod.css`, l'occhiello che mostra/nasconde la password) aveva
+lo sfondo scuro del `button:hover:not(:disabled)` globale nonostante
+avesse un proprio `:hover`. Qui non basta la classe singola: `.fz-
+password-toggle:hover` e `button:hover:not(:disabled)` hanno lo stesso
+numero di classi/pseudo-classi (2), quindi si spareggia sul numero di
+elementi HTML nel selettore — e `button:hover:not(:disabled)` ne ha uno
+(`button`) contro zero, quindi vince lui. Corretto aggiungendo
+`:not(:disabled)` anche a `.fz-password-toggle:hover` (diventa
+`.fz-password-toggle:hover:not(:disabled)`, 3 pseudo-classi/classi,
+vince sempre) e impostando esplicitamente `background: none`. **Regola
+pratica per tutto il progetto**: qualunque `<button>` con una classe
+propria che deve avere un hover diverso da quello generico va scritto
+come `.classe:hover:not(:disabled)`, mai solo `.classe:hover` — altrimenti
+rischia di pareggiare in specificità con `button:hover:not(:disabled)`
+e perdere lo spareggio.
+
 ## Variabili d'ambiente
 
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — necessarie per

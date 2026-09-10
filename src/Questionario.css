@@ -11,6 +11,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+}
+
+.q-header-text {
+  min-width: 0;
 }
 
 .q-header {
@@ -250,5 +255,24 @@ form > .q-btn-secondary {
 @media (max-width: 760px) {
   .q-step-grid {
     grid-template-columns: 1fr;
+  }
+
+  .q-header .brand-name {
+    font-size: 17px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .q-header .brand-tag {
+    display: none;
+  }
+
+  .q-header-logout-text {
+    display: none;
+  }
+
+  .q-header-logout.q-header-logout {
+    padding: 11px;
   }
 }

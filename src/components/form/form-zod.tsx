@@ -56,7 +56,7 @@ function PasswordInput({
         aria-describedby={describedBy}
         {...registration}
       />
-      <Button
+      <button
         type="button"
         className="fz-password-toggle"
         onClick={() => setVisible((v) => !v)}
@@ -65,7 +65,7 @@ function PasswordInput({
         tabIndex={-1}
       >
         {visible ? <EyeOff size={18} /> : <Eye size={18} />}
-      </Button>
+      </button>
     </div>
   );
 }

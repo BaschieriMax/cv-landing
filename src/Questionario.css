@@ -61,7 +61,7 @@
   color: var(--ink-soft);
 }
 
-.q-body {
+.wrap.q-body {
   padding: 28px;
 }
 

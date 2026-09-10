@@ -139,9 +139,26 @@ homepage, con un testo email strutturato per sezioni (funzione
 
 In "Competenze" solo "Competenze tecniche", "Lingue parlate" e
 "Software/strumenti" sono obbligatori; "Certificazioni" e "Soft skills"
-sono facoltativi. Sotto i 760px il tag `<form>` ha padding aggiuntivo
-per evitare che i campi risultino attaccati ai bordi del dispositivo
-(vedi media query in fondo a `Questionario.css`).
+sono facoltativi.
+
+Il padding di `.q-body` (contenitore di progress bar + form, in
+`Questionario.css`) va scritto come `.wrap.q-body { padding: 28px; }`,
+non come `.q-body { padding: ... }` da solo. Motivo: `homepage.tsx` e
+`questionario.tsx` sono pagine lazy-loaded (vedi `routes/lazy-pages.ts`),
+quindi i loro CSS vengono iniettati nel `<head>` nell'ordine in cui le
+pagine vengono effettivamente visitate, non in un ordine fisso di build.
+`.wrap` esiste in entrambi i CSS (stessa classe, stesso nome) con
+`padding: 0 28px`; se `.q-body` ha la stessa specificità di `.wrap`
+(un solo selettore di classe), a vincere è quello iniettato per ultimo
+nel DOM — cosa che cambia a seconda che l'utente arrivi su
+`/questionario` direttamente o ci torni dopo aver visitato "/" (es. col
+pulsante "indietro" del browser dopo aver cliccato l'icona home nel
+wizard), causando un bug intermittente di padding mancante. Il
+selettore composto `.wrap.q-body` ha specificità maggiore della singola
+`.wrap` e vince sempre, a prescindere dall'ordine di caricamento. Se in
+futuro si aggiungono altre combinazioni di classi condivise tra pagine
+lazy diverse, applicare lo stesso pattern (selettore composto) invece di
+affidarsi all'ordine del CSS.
 
 ## Variabili d'ambiente
 

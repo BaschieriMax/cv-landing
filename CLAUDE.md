@@ -186,6 +186,24 @@ homepage — vanno sempre scoperti a una classe di quella sezione (es.
 nello stesso documento non appena l'utente ha visitato sia "/" che
 "/questionario" nella stessa sessione del browser.
 
+**Bug simile nell'aspetto ma di causa diversa**: dopo il logout, le tab
+"Accedi"/"Registrati" (`.auth-tab` in `login-form-zod.css`) mostravano
+il border-radius e l'hover del `button {}` generico invece dei propri.
+Qui non è un problema di ordine di caricamento (una classe come
+`.auth-tab` batte sempre, matematicamente, un selettore d'elemento nudo
+`button`, indipendentemente da quale CSS carica per ultimo) — mancavano
+proprio due dichiarazioni su `.auth-tab`: non impostava `border-radius`
+(quindi ereditava `var(--radius-md)` dal `button` generico) e
+`.auth-tab:hover:not(.active)` esclude di proposito la tab già attiva,
+quindi il suo hover ricadeva sul `button:hover` scuro generico per
+mancanza di una regola dedicata. Corretto aggiungendo
+`border-radius: 0` e `.auth-tab.active:hover { background: none; }`.
+Lezione: quando un componente definisce classi che si sovrappongono
+solo in parte alle proprietà di un selettore globale (`button`, `input`,
+ecc.), va esplicitato ogni stato (default, hover, active, disabled) che
+il componente usa, altrimenti gli stati non coperti ricadono sul
+selettore globale.
+
 ## Variabili d'ambiente
 
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — necessarie per

@@ -4,6 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <script type="text/javascript">
+      // Complemento del redirect in public/404.html per il routing lato
+      // client su GitHub Pages. Su Netlify (che gestisce le SPA route via
+      // public/_redirects) questo blocco non trova mai il marcatore "?/"
+      // e non fa nulla.
+      (function (l) {
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      })(window.location);
+    </script>
+
     <title>Massimo Baschieri — CV writing e career coaching</title>
     <meta name="description" content="Riscrivo il tuo CV in ottica ATS, lo adatto al ruolo che cerchi e ti preparo al colloquio. Consegna in 48-72h, pacchetti da CV base a Career Boost con simulazione colloquio." />
     <link rel="canonical" href="https://cvbaschieridev.netlify.app/" />

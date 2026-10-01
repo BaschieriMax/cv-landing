@@ -299,12 +299,4 @@ form > .q-btn-secondary {
   .q-header .brand-tag {
     display: none;
   }
-
-  .q-header-logout-text {
-    display: none;
-  }
-
-  .q-header-logout.q-header-logout {
-    padding: 11px;
-  }
 }

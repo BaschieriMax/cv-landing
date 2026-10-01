@@ -2,10 +2,8 @@ import { useState } from "react";
 import type { ChangeEvent, ReactNode, SubmitEvent } from "react";
 import { useNavigate } from "react-router";
 import "../Questionario.css";
-import { useAuthStore } from "../store/auth";
 import Button from "../components/Button";
-import { useMutation } from "@tanstack/react-query";
-import { LoaderCircle, LogOut, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 
 const STEP_TITLES = [
   "Dati personali",
@@ -1015,13 +1013,12 @@ interface Web3FormsResponse {
 }
 
 export default function Questionario() {
-  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const EMPTY_QUESTIONARIO: QuestionarioData = {
     personali: {
-      nome: user?.name ?? "",
-      email: user?.email ?? "",
+      nome: "",
+      email: "",
       telefono: "",
       citta: "",
     },
@@ -1029,7 +1026,7 @@ export default function Questionario() {
       ruolo: "",
       settore: "",
       aziendeTarget: "",
-      contratto: "",
+      contratto: "Tempo indeterminato",
       smartWorking: "",
       trasferimento: "",
       rangeSalariale: "",
@@ -1231,12 +1228,6 @@ export default function Questionario() {
     }
   }
 
-  const mutation = useMutation({
-    mutationFn: logout,
-  });
-
-  const handleLogout = async () => await mutation.mutateAsync();
-
   return (
     <div className="questionario-page">
       <header className="q-header">
@@ -1251,30 +1242,12 @@ export default function Questionario() {
               MB
             </button>
             <div className="q-header-text">
-              <div className="brand-name">Benvenuto {user?.name}</div>
+              <div className="brand-name">Massimo Baschieri</div>
               <div className="brand-tag">
-                ora puoi compilare il questionario per l'avvio della lavorazione
-                del CV
+                Questionario per l'avvio della lavorazione del CV
               </div>
             </div>
           </div>
-          <Button
-            variant="secondary"
-            className="q-header-logout"
-            onClick={handleLogout}
-            icon={
-              mutation.isPending ? (
-                <LoaderCircle size={16} className="spin" />
-              ) : (
-                <LogOut size={16} />
-              )
-            }
-            disabled={mutation.isPending}
-          >
-            <span className="q-header-logout-text">
-              {mutation.isPending ? "Uscita in corso..." : "Esci"}
-            </span>
-          </Button>
         </div>
       </header>
 

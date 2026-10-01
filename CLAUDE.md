@@ -7,12 +7,14 @@ su qualsiasi richiesta relativa a questo repository.
 
 `zunstant.test` è l'evoluzione di **cv-landing**, la landing page per
 l'attività di CV writing e career coaching di Massimo Baschieri
-(Sassuolo, MO). Il contenuto (copy, design, form di contatto e
-questionario) proviene da lì; qui è stata aggiunta un'**autenticazione
-via Supabase** che nel progetto originale non esisteva, per proteggere
-la route "/questionario" dietro un login.
+(Sassuolo, MO), convertita a TypeScript. Una versione precedente di
+questo progetto proteggeva "/questionario" con un login/signup via
+Supabase: rimosso (DEC-007 nel Decision Log, `docs/decision-log.md`)
+perché obbligare un cliente già contattato a creare un account per
+compilare un questionario una tantum era una frizione ingiustificata,
+senza alcun beneficio reale. Oggi tutte le route sono pubbliche.
 
-Sito originale (stesso contenuto, senza auth): https://cvbaschieridev.netlify.app/
+Sito gemello senza TypeScript: https://cvbaschieridev.netlify.app/
 
 ## Stack tecnico
 
@@ -21,15 +23,6 @@ Sito originale (stesso contenuto, senza auth): https://cvbaschieridev.netlify.ap
 - **react-router v8** (`createBrowserRouter` + `RouterProvider` da
   `react-router` / `react-router/dom`) — non `react-router-dom` con
   `BrowserRouter` come nel progetto originale
-- **Supabase** (`@supabase/supabase-js`) per l'autenticazione
-  email/password. Ogni utente auth ha un profilo nella tabella
-  `users` (`id`, `name`, `email`, `auth_id`), creato al primo
-  login/signup se non esiste ancora (vedi `ensureProfile` in
-  `src/store/auth.ts`)
-- **Zustand** per lo stato di autenticazione globale
-  (`src/store/auth.ts`)
-- **React Hook Form + Zod** (`@hookform/resolvers/zod`) per i form
-  tipizzati di login/signup (`src/components/form/`)
 - **TanStack React Query** predisposto (`QueryClientProvider` in
   `src/App.tsx`) ma non ancora usato per query specifiche
 - **lucide-react** per icone (per ora solo lo spinner di caricamento
@@ -63,27 +56,13 @@ src/
     route-error.tsx              errorElement per errori runtime nelle route (distingue
                                  404 da altri errori via isRouteErrorResponse)
     route-status.css             stile condiviso tra not-found.tsx e route-error.tsx
-  layouts/
-    AuthLayout.tsx               gate di autenticazione: mostra login/signup se non
-                                 loggato, altrimenti barra utente + logout e <Outlet />
-    AuthLayout.css
   routes/
-    router.tsx                  definizione route (createBrowserRouter)
+    router.tsx                  definizione route (createBrowserRouter), tutte pubbliche
     lazy-pages.ts                React.lazy() delle pagine
     with-suspense.tsx            helper che avvolge una pagina lazy in <Suspense>
   components/
     Button.tsx                   bottone base riusato ovunque
-    form/
-      form-zod.tsx                form generico guidato da uno schema Zod + config campi
-      login-form-zod.tsx          form di login/signup, usa form-zod.tsx + store/auth.ts
-  schema/
-    login-form-schema.ts         schema Zod login/signup + tipi dei campi del form
-  store/
-    auth.ts                       stato Zustand: user, loading, login/signup/logout/hydrate
-  model/
-    user.ts                       tipo UserProps (profilo utente)
   utils/
-    supabase.ts                   client Supabase (createClient)
     react-query.ts                istanza QueryClient
 public/
   favicon.ico, favicon-32.png, favicon.svg, apple-touch-icon.png    icone del sito
@@ -91,42 +70,32 @@ public/
   curriculum-vitae.png            asset grafico (verificare dove/se è referenziato)
   icons.svg                       sprite icone
   _redirects                      redirect Netlify (SPA fallback su index.html)
-  robots.txt                      Disallow su /questionario (dietro login, non va indicizzata)
+  robots.txt                      Disallow su /questionario (va condivisa solo con clienti
+                                 già contattati, non indicizzata nonostante sia pubblica)
   sitemap.xml                      solo "/", aggiornare se si aggiungono altre route pubbliche
-.env                              VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY
-                                 (VITE_WEB3FORMS_ACCESS_KEY va aggiunta a parte, vedi sotto)
+.env                              VITE_WEB3FORMS_ACCESS_KEY (vedi sotto)
 ```
 
-## Routing e autenticazione
+## Routing
 
-Route definite in `src/routes/router.tsx`:
+Route definite in `src/routes/router.tsx`, tutte pubbliche:
 
-- `/` — pubblica, `homepage.tsx` (landing + form di contatto), nessun
-  login richiesto
-- `/questionario` — protetta da `AuthLayout` (`src/layouts/AuthLayout.tsx`):
-  - `loading` → messaggio di caricamento
-  - nessun `user` → mostra `LoginFormZod` (login/signup), il
-    questionario non viene renderizzato
-  - `user` presente → barra con nome utente + logout, poi `<Outlet />`
-    con `questionario.tsx`
+- `/` — `homepage.tsx` (landing + form di contatto)
+- `/questionario` — `questionario.tsx` (wizard), raggiungibile solo via
+  link diretto condiviso da Massimo dopo il primo contatto (vedi
+  `robots.txt`: non indicizzata)
+- `*` — `not-found.tsx` (404 in stile col resto del sito, non l'errore
+  grezzo di default di React Router)
 
-`useAuthStore` (`src/store/auth.ts`) espone `login`, `signup`,
-`logout`, `modifyName`, `hydrate`. `hydrate()` va chiamato una volta
-all'avvio (lo fa `AuthLayout` in un `useEffect`) per leggere la sessione
-Supabase esistente e sottoscriversi a `onAuthStateChange`; ritorna la
-funzione di unsubscribe.
+`/` e `/questionario` hanno entrambe un `errorElement: <RouteError />`
+per gli errori runtime nei componenti (`route-error.tsx`, distingue 404
+da altri errori tramite `isRouteErrorResponse`). Se si aggiungono nuove
+route, valutare se serve lo stesso `errorElement`.
 
-Se in futuro altre route devono richiedere login, vanno annidate come
-children di `{ element: <AuthLayout />, children: [...] }` in
-`router.tsx`, non duplicare la logica di gate altrove.
-
-Una route `path: "*"` in coda a `router.tsx` cattura ogni URL sconosciuto
-e mostra `not-found.tsx` (404 in stile col resto del sito, non l'errore
-grezzo di default di React Router). `/` e il gruppo `AuthLayout` hanno
-inoltre un `errorElement: <RouteError />` per gli errori runtime nei
-componenti (`route-error.tsx`, distingue 404 da altri errori tramite
-`isRouteErrorResponse`). Se si aggiungono nuove route, valutare se
-serve lo stesso `errorElement`.
+Se in futuro serve di nuovo un gate di autenticazione su qualche route
+(contesto storico: rimosso con DEC-007 in `docs/decision-log.md`, era
+Supabase Auth), valutare prima se il bisogno reale lo giustifica — vedi
+le alternative scartate nella stessa decisione.
 
 ## Route "/questionario" — dettaglio wizard
 
@@ -186,54 +155,24 @@ homepage — vanno sempre scoperti a una classe di quella sezione (es.
 nello stesso documento non appena l'utente ha visitato sia "/" che
 "/questionario" nella stessa sessione del browser.
 
-**Bug simile nell'aspetto ma di causa diversa**: dopo il logout, le tab
-"Accedi"/"Registrati" (`.auth-tab` in `login-form-zod.css`) mostravano
-il border-radius e l'hover del `button {}` generico invece dei propri.
-Qui non è un problema di ordine di caricamento (una classe come
-`.auth-tab` batte sempre, matematicamente, un selettore d'elemento nudo
-`button`, indipendentemente da quale CSS carica per ultimo) — mancavano
-proprio due dichiarazioni su `.auth-tab`: non impostava `border-radius`
-(quindi ereditava `var(--radius-md)` dal `button` generico) e
-`.auth-tab:hover:not(.active)` esclude di proposito la tab già attiva,
-quindi il suo hover ricadeva sul `button:hover` scuro generico per
-mancanza di una regola dedicata. Corretto aggiungendo
-`border-radius: 0` e `.auth-tab.active:hover { background: none; }`.
-Lezione: quando un componente definisce classi che si sovrappongono
-solo in parte alle proprietà di un selettore globale (`button`, `input`,
-ecc.), va esplicitato ogni stato (default, hover, active, disabled) che
-il componente usa, altrimenti gli stati non coperti ricadono sul
-selettore globale.
-
-**Terza variante, ancora più subdola**: `.fz-password-toggle:hover`
-(in `form-zod.css`, l'occhiello che mostra/nasconde la password) aveva
-lo sfondo scuro del `button:hover:not(:disabled)` globale nonostante
-avesse un proprio `:hover`. Qui non basta la classe singola: `.fz-
-password-toggle:hover` e `button:hover:not(:disabled)` hanno lo stesso
-numero di classi/pseudo-classi (2), quindi si spareggia sul numero di
-elementi HTML nel selettore — e `button:hover:not(:disabled)` ne ha uno
-(`button`) contro zero, quindi vince lui. Corretto aggiungendo
-`:not(:disabled)` anche a `.fz-password-toggle:hover` (diventa
-`.fz-password-toggle:hover:not(:disabled)`, 3 pseudo-classi/classi,
-vince sempre) e impostando esplicitamente `background: none`. **Regola
-pratica per tutto il progetto**: qualunque `<button>` con una classe
-propria che deve avere un hover diverso da quello generico va scritto
-come `.classe:hover:not(:disabled)`, mai solo `.classe:hover` — altrimenti
-rischia di pareggiare in specificità con `button:hover:not(:disabled)`
-e perdere lo spareggio.
+**Regola pratica per tutto il progetto**: qualunque `<button>` con una
+classe propria che deve avere un hover diverso da quello generico va
+scritto come `.classe:hover:not(:disabled)`, mai solo `.classe:hover`
+— altrimenti rischia di pareggiare in specificità con
+`button:hover:not(:disabled)` e perdere lo spareggio sul numero di
+elementi HTML nel selettore (`Button.css` segue già questo pattern su
+`.btn-primary`/`.btn-secondary`/`.btn-link`).
 
 ## Variabili d'ambiente
 
-- `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — necessarie per
-  qualunque funzionalità di autenticazione (login, signup, hydrate).
-  Senza queste il client Supabase non si inizializza correttamente.
 - `VITE_WEB3FORMS_ACCESS_KEY` — access key di Web3Forms per il form di
-  contatto e il questionario. **Non è presente nel `.env` attuale**:
-  finché non viene aggiunta, entrambi i form falliscono con "Access key
-  Web3Forms mancante" (comportamento voluto, non un bug — vedi
-  `handleSubmit`/`submitQuestionario`). Deve essere presente anche
-  nell'ambiente di build in produzione (Netlify: Site configuration →
-  Environment variables → "Clear cache and deploy site" dopo averla
-  aggiunta, non un deploy normale, perché Vite la incorpora in build).
+  contatto e il questionario, presente nel `.env` locale. Deve essere
+  presente anche nell'ambiente di build in produzione (Netlify: Site
+  configuration → Environment variables → "Clear cache and deploy
+  site" dopo averla aggiunta, non un deploy normale, perché Vite la
+  incorpora in build) — senza, entrambi i form falliscono con "Access
+  key Web3Forms mancante" (comportamento voluto, non un bug — vedi
+  `handleSubmit`/`submitQuestionario`).
 
 ## Contesto business — pacchetti e prezzi attuali
 
@@ -259,9 +198,7 @@ low-cost generico né un coach executive costoso.
 Vedi la skill `brand-voice` per le linee guida complete di tono e voce.
 In sintesi: italiano, sentence case (mai Title Case o ALL CAPS nei
 titoli), niente frasi motivazionali generiche, sempre concreto e
-orientato al beneficio per il cliente. Valgono anche per i testi di
-login/signup e per i messaggi di errore dell'autenticazione (es. errori
-Supabase): stesso registro diretto, senza "Errore:" davanti.
+orientato al beneficio per il cliente.
 
 Il footer di `homepage.tsx` mostra solo copyright ed email di contatto —
 la città ("Sassuolo (MO)") è stata rimossa perché già presente
@@ -283,31 +220,14 @@ su bottoni, input/select/textarea, service-card) e `--radius-lg` (12px).
 Ogni `border-radius` va scritto con una di queste variabili, mai un
 valore in px a mano — anche se numericamente coincidesse.
 
-Vale anche per `AuthLayout` e per i form di login/signup: niente stile
-"card SaaS" con ombre o angoli oltre `--radius-lg`, restare coerenti con
-il resto del sito.
-
-Il form di login/signup è stato ridisegnato via Claude Design (canvas
-"Login Form Redesign") e implementato in `login-form-zod.tsx`/`.css`:
-una card unica (`--radius-lg`) con due tab "Accedi"/"Registrati" in
-testa (indicatore `--gold-deep` sul tab attivo) invece del vecchio
-titolo statico + link di switch in fondo. Titolo e sottotitolo dentro
-la card cambiano in base al tab attivo. `FormZod` (`form-zod.tsx`) ha
-due aggiunte generiche per supportarlo, riusabili da futuri form:
-`hint` per campo (testo mostrato quando non c'è errore, in un'area a
-altezza fissa — 18px — per non far "saltare" il layout quando appare
-un errore) e `statusSlot` (contenuto in una regione `aria-live`,
-renderizzato prima del bottone di invio: qui ci va il messaggio di
-errore/successo del login/signup).
-
 ## Cosa NON fare
 
 - Non aggiungere librerie CSS (Tailwind, Bootstrap, ecc.) — il progetto
   usa CSS puro di proposito, resta così.
-- Non introdurre un backend/database aggiuntivo oltre a Supabase senza
-  che l'utente lo chieda esplicitamente.
-- Non rimuovere o bypassare `AuthLayout` per "semplificare" l'accesso a
-  "/questionario" — il gate è voluto, non un compromesso temporaneo.
+- Non introdurre un backend/database senza che l'utente lo chieda
+  esplicitamente — il modello attuale (form → email via Web3Forms) è
+  voluto, non un compromesso temporaneo (vedi DEC-007: un'autenticazione
+  Supabase c'era già stata ed è stata rimossa per questo).
 - Non cambiare la palette colori, i font o le variabili di raggio
   (`--radius-sm/md/lg` in `src/variables.css`) senza conferma esplicita
   — fanno parte dell'identità visiva già scelta e testata.
@@ -329,24 +249,11 @@ errore/successo del login/signup).
 
 ## Prima del deploy in produzione
 
-- **Il progetto non è ancora un repository Git** — prerequisito per
-  collegare Netlify (che si aspetta un repo GitHub/GitLab per il
-  deploy automatico ad ogni push, come descritto sopra). Da fare prima
-  di qualunque altro step di deploy.
-- ~~Policy RLS della tabella `users` troppo permissiva in lettura~~ —
-  **risolto**: `PolicyViewUser` (SELECT) è stata ristretta a
-  `auth.uid() = auth_id` per il ruolo `authenticated`, simmetrica a
-  INSERT/UPDATE (in precedenza era `qual: true` per `public`, quindi
-  chiunque avesse la chiave pubblica poteva leggere nome ed email di
-  tutti gli utenti registrati).
-- Il "Site URL"/"Redirect URLs" dell'Auth Supabase va aggiornato dal
-  dominio di sviluppo al dominio reale di produzione prima del deploy,
-  altrimenti i link nelle email di conferma non funzionano per gli
-  utenti finali.
-- Advisor Supabase segnala anche "Leaked Password Protection Disabled"
-  (WARN, non bloccante): si attiva con un toggle nel dashboard Auth →
-  Policies, verifica le password contro HaveIBeenPwned al login/signup.
-  Non applicato — è una scelta di prodotto, non un fix di codice.
 - `index.html` (canonical, og:url) e `public/sitemap.xml` puntano
   entrambi a `https://cvbaschieridev.netlify.app/`: se il dominio di
   produzione di questo progetto sarà diverso, vanno aggiornati insieme.
+- Residuo lato infrastruttura dopo la rimozione dell'autenticazione
+  (DEC-007): il progetto Supabase usato per login/signup è ancora
+  attivo (tabella `users`, utenti di test) ma non più referenziato dal
+  codice. Da mettere in pausa/eliminare quando c'è tempo — nessuna
+  fretta, nessun impatto funzionale (vedi `docs/tech-debt.md`, TD-006).
